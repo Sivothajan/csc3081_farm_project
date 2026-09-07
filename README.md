@@ -9,6 +9,14 @@ Deformation. Built with C++20, OpenGL and FreeGLUT for CSC3081.
 
 ![Farm overview](screenshots/overview.png)
 
+## Documentation
+
+- [Complete Beginner Codebase Handbook (PDF)](docs/handbook/willowfield_codebase_handbook.pdf)
+- [Complete Beginner Codebase Handbook source (LaTeX)](docs/handbook/willowfield_codebase_handbook.tex)
+- [Beginner Code Walkthrough](docs/CODE_WALKTHROUGH.md)
+- [Scripts and Development Tools](docs/SCRIPTS.md)
+- [Third-Party Components](docs/THIRD_PARTY.md)
+
 ## Features
 
 - Explore the farm freely or switch between front, back, side and barn views.
@@ -110,10 +118,6 @@ scales with squared height, so the base stays fixed and the tip bends more.
 Camera bounds prevent leaving the area or moving below ground; objects do not
 block movement.
 
-For a beginner-friendly explanation of the code flow, important files, tuning
-parameters and common modification recipes, see the
-[code walkthrough](docs/CODE_WALKTHROUGH.md).
-
 Run the build, behavior, rendering and window-close checks with:
 
 ```powershell
@@ -121,9 +125,4 @@ Run the build, behavior, rendering and window-close checks with:
 ```
 
 Run `.\scripts\format.ps1` to format the project, or add `-Check` to check
-formatting. See [scripts and formatting](docs/SCRIPTS.md) for prerequisites,
-editor setup and generated files. Build outputs belong in the ignored `build/`
-directory.
-
-See [third-party resources](docs/THIRD_PARTY.md) for dependency licenses and
-references.
+formatting. Build outputs belong in the ignored `build/` directory.

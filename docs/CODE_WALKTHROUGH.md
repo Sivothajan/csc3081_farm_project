@@ -13,14 +13,20 @@ Use this document in three passes:
 
 1. Read **Quick Mental Model** and **Program Entry** to understand how the app
    runs.
-2. Use **Start Here When Modifying** when you only need to tune a parameter.
-3. Use **Common Modification Recipes** when you want to add or change behavior.
+1. Use **Start Here When Modifying** when you only need to tune a parameter.
+1. Use **Common Modification Recipes** when you want to add or change behavior.
 
 For the fastest learning path, read the files in the order listed at the end of
 this document.
 
+## Related Handbook
+
+- [Complete Beginner Codebase Handbook (PDF)](handbook/willowfield_codebase_handbook.pdf)
+- [Complete Beginner Codebase Handbook source (LaTeX)](handbook/willowfield_codebase_handbook.tex)
+
 ## Table of Contents
 
+- [Related Handbook](#related-handbook)
 - [Quick Mental Model](#quick-mental-model)
 - [Start Here When Modifying](#start-here-when-modifying)
 - [Coordinate System](#coordinate-system)
@@ -55,11 +61,11 @@ this document.
 The program runs in this loop:
 
 1. `src/main.cpp` creates the OpenGL window.
-2. FreeGLUT calls input callbacks when the user presses keys or moves the mouse.
-3. FreeGLUT calls `update()` around every 16 ms.
-4. `update()` moves the camera, wind, cows, sky, windmill, and grass cutter.
-5. FreeGLUT calls `display()`.
-6. `display()` asks `Scene` to draw the whole farm.
+1. FreeGLUT calls input callbacks when the user presses keys or moves the mouse.
+1. FreeGLUT calls `update()` around every 16 ms.
+1. `update()` moves the camera, wind, cows, sky, windmill, and grass cutter.
+1. FreeGLUT calls `display()`.
+1. `display()` asks `Scene` to draw the whole farm.
 
 The most important files are:
 
@@ -284,22 +290,22 @@ This handles function keys:
 This draws the farm in a deliberate order:
 
 1. Apply lighting.
-2. Apply barn night light.
-3. Set wireframe or filled drawing.
-4. Draw sky.
-5. Draw terrain.
-6. Draw paths.
-7. Draw fence.
-8. Draw windmill.
-9. Draw barn.
-10. Draw rocks.
-11. Draw hay.
-12. Draw grass.
-13. Draw crops.
-14. Draw trees.
-15. Draw cows.
-16. Draw cutting circle.
-17. Draw HUD overlay.
+1. Apply barn night light.
+1. Set wireframe or filled drawing.
+1. Draw sky.
+1. Draw terrain.
+1. Draw paths.
+1. Draw fence.
+1. Draw windmill.
+1. Draw barn.
+1. Draw rocks.
+1. Draw hay.
+1. Draw grass.
+1. Draw crops.
+1. Draw trees.
+1. Draw cows.
+1. Draw cutting circle.
+1. Draw HUD overlay.
 
 If you add a new object, place it where it makes visual sense. For example, a
 ground object should usually render after terrain/path and before vegetation.
@@ -364,10 +370,10 @@ This puts the camera in front of the farm and points it at the center.
 To add another preset camera:
 
 1. Add a new value to `enum class View` in `Camera.h`.
-2. Add a `case` in `Camera::setView()`.
-3. Add a text key to `Camera::viewName()`.
-4. Add that text key to `assets/text.txt`.
-5. Add a shortcut in `Scene::specialKey()` or `Scene::key()`.
+1. Add a `case` in `Camera::setView()`.
+1. Add a text key to `Camera::viewName()`.
+1. Add that text key to `assets/text.txt`.
+1. Add a shortcut in `Scene::specialKey()` or `Scene::key()`.
 
 ## Constants: `src/utils/Constants.h`
 
@@ -448,8 +454,8 @@ The final formula includes:
 u * u
 ```
 
-`u` is height from root to tip. At the root `u = 0`, so displacement is zero.
-At the tip `u = 1`, displacement is strongest. This keeps plant roots fixed.
+`u` is height from root to tip. At the root `u = 0`, so displacement is zero. At
+the tip `u = 1`, displacement is strongest. This keeps plant roots fixed.
 
 `bend()` takes a base point and returns a deformed point:
 
@@ -620,19 +626,19 @@ one({-19, 0, -18}, 1.1f, .2f, wind);
 The parameters are:
 
 1. position
-2. scale
-3. phase
-4. wind system
+1. scale
+1. phase
+1. wind system
 
 To add a tree, add another `one(...)` call.
 
 `Tree::one()` draws:
 
 1. a trunk
-2. five branches
-3. ellipsoid leaf clusters
-4. individual hanging leaves
-5. a top leaf cluster
+1. five branches
+1. ellipsoid leaf clusters
+1. individual hanging leaves
+1. a top leaf cluster
 
 The branch loop:
 
@@ -831,8 +837,8 @@ When editing this file, make small changes and rebuild often.
 angle = std::fmod(angle + strength * 65 * dt, 360.0f);
 ```
 
-`65` is the rotation speed multiplier. Higher means faster spinning for the
-same wind strength.
+`65` is the rotation speed multiplier. Higher means faster spinning for the same
+wind strength.
 
 The windmill position is in `render()`:
 
@@ -935,7 +941,7 @@ rebuilding the C++ code.
 To add a sign:
 
 1. Add text keys in `assets/text.txt`.
-2. Add a `Draw::sign(...)` call in `Path::render()`.
+1. Add a `Draw::sign(...)` call in `Path::render()`.
 
 ## Sky: `src/environment/Sky.*`
 
@@ -1136,8 +1142,8 @@ Other helpers:
 | `cross()`             | Cross product for triangle normals    |
 | `distanceSquared2D()` | Distance check using only `x` and `z` |
 
-`distanceSquared2D()` avoids `sqrt`, so it is faster for repeated radius
-checks like grass cutting.
+`distanceSquared2D()` avoids `sqrt`, so it is faster for repeated radius checks
+like grass cutting.
 
 ## Common Modification Recipes
 
@@ -1258,12 +1264,12 @@ Replace `x` and `z` with the desired position.
 ### Add a New Decorative Object
 
 1. Create `src/objects/NewObject.h`.
-2. Create `src/objects/NewObject.cpp`.
-3. Add the `.cpp` file to `CMakeLists.txt` and the Visual Studio project if
+1. Create `src/objects/NewObject.cpp`.
+1. Add the `.cpp` file to `CMakeLists.txt` and the Visual Studio project if
    needed.
-4. Include it in `src/core/Scene.h`.
-5. Add it as a private member in `Scene`.
-6. Call `newObject.render()` inside `Scene::render()`.
+1. Include it in `src/core/Scene.h`.
+1. Add it as a private member in `Scene`.
+1. Call `newObject.render()` inside `Scene::render()`.
 
 A minimal object looks like:
 
@@ -1345,13 +1351,13 @@ Check formatting only:
 Before changing code:
 
 1. Decide the exact behavior you want.
-2. Find the smallest file that controls it.
-3. Change one thing at a time.
-4. Build after each small change.
-5. Run the app and test the related control/view.
-6. If the change affects visuals, check both overview and close camera views.
-7. If the change affects cows, test both day and night using `N`.
-8. If the change affects text, press `F9` before rebuilding.
+1. Find the smallest file that controls it.
+1. Change one thing at a time.
+1. Build after each small change.
+1. Run the app and test the related control/view.
+1. If the change affects visuals, check both overview and close camera views.
+1. If the change affects cows, test both day and night using `N`.
+1. If the change affects text, press `F9` before rebuilding.
 
 Good first modifications:
 
@@ -1430,25 +1436,25 @@ Check:
 If you want to learn the full project gradually, read in this order:
 
 1. `src/main.cpp`
-2. `src/core/Scene.h`
-3. `src/core/Scene.cpp`
-4. `src/utils/Constants.h`
-5. `src/utils/MathUtils.h`
-6. `src/utils/Helpers.h`
-7. `src/utils/Helpers.cpp`
-8. `src/core/Camera.cpp`
-9. `src/vegetation/Grass.cpp`
-10. `src/systems/WindSystem.cpp`
-11. `src/systems/GrassCuttingSystem.cpp`
-12. `src/environment/Terrain.cpp`
-13. `src/environment/Path.cpp`
-14. `src/structures/Fence.cpp`
-15. `src/structures/Windmill.cpp`
-16. `src/animals/Cow.cpp`
-17. `src/systems/Herd.cpp`
-18. `src/structures/Barn.cpp`
-19. `src/core/Hud.cpp`
-20. `src/core/Text.cpp`
+1. `src/core/Scene.h`
+1. `src/core/Scene.cpp`
+1. `src/utils/Constants.h`
+1. `src/utils/MathUtils.h`
+1. `src/utils/Helpers.h`
+1. `src/utils/Helpers.cpp`
+1. `src/core/Camera.cpp`
+1. `src/vegetation/Grass.cpp`
+1. `src/systems/WindSystem.cpp`
+1. `src/systems/GrassCuttingSystem.cpp`
+1. `src/environment/Terrain.cpp`
+1. `src/environment/Path.cpp`
+1. `src/structures/Fence.cpp`
+1. `src/structures/Windmill.cpp`
+1. `src/animals/Cow.cpp`
+1. `src/systems/Herd.cpp`
+1. `src/structures/Barn.cpp`
+1. `src/core/Hud.cpp`
+1. `src/core/Text.cpp`
 
 That order starts with the main program flow, then small helpers, then visual
 objects, then the more complex cow/barn/HUD systems.
