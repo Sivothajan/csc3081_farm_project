@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="csc3081_farm_project.vcxproj" Id="6cbe65fc-8d85-4999-84dc-4be2c2f819df" />
+</Solution>

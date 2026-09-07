@@ -1,0 +1,52 @@
+#pragma once
+#include "Camera.h"
+#include "../environment/Terrain.h"
+#include "../environment/Path.h"
+#include "Lighting.h"
+#include "../structures/Fence.h"
+#include "../structures/Windmill.h"
+#include "../structures/Barn.h"
+#include "../objects/Rock.h"
+#include "../objects/HayBale.h"
+#include "../vegetation/Grass.h"
+#include "../vegetation/Crop.h"
+#include "../vegetation/Tree.h"
+#include "../animals/Cow.h"
+#include "../systems/AnimationSystem.h"
+#include "../systems/GrassCuttingSystem.h"
+#include "Hud.h"
+#include "Texture.h"
+#include "../environment/Sky.h"
+class Scene {
+    friend class Verification;
+
+  public:
+    Camera camera;
+    void initialize(const std::filesystem::path& executable);
+    void background() const { sky.background(); }
+    void update(float dt);
+    void render(int width, int height) const;
+    void key(unsigned char key);
+
+  private:
+    Terrain terrain;
+    Path path;
+    Fence fence;
+    Windmill windmill;
+    Barn barn;
+    Rock rocks;
+    HayBale hay;
+    Lighting lighting;
+    WindSystem wind;
+    Grass grass;
+    Crop crops;
+    Tree trees;
+    std::array<Cow, 3> cows{{Cow({9, 0, 10}, 0), Cow({16, 0, 12}, 12), Cow({9, 0, 18}, 20)}};
+    AnimationSystem animation;
+    GrassCuttingSystem cutting;
+    Hud hud;
+    bool showDiagram = true, lightingEnabled = true, wireframe = false;
+    TextureSet textures;
+    bool texturesEnabled = true;
+    Sky sky;
+};

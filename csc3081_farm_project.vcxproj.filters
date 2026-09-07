@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src" />
+    <Filter Include="src\animals" />
+    <Filter Include="src\core" />
+    <Filter Include="src\environment" />
+    <Filter Include="src\objects" />
+    <Filter Include="src\structures" />
+    <Filter Include="src\systems" />
+    <Filter Include="src\utils" />
+    <Filter Include="src\vegetation" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\animals\Cow.cpp">
+      <Filter>src\animals</Filter>
+    </ClCompile>
+    <ClInclude Include="src\animals\Cow.h">
+      <Filter>src\animals</Filter>
+    </ClInclude>
+    <ClCompile Include="src\core\Camera.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClInclude Include="src\core\Camera.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClCompile Include="src\core\Capture.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClInclude Include="src\core\Capture.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClCompile Include="src\core\Hud.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClInclude Include="src\core\Hud.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClCompile Include="src\core\Lighting.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClInclude Include="src\core\Lighting.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClCompile Include="src\core\Scene.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClInclude Include="src\core\Scene.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClCompile Include="src\core\Texture.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClInclude Include="src\core\Texture.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClCompile Include="src\core\Verification.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClInclude Include="src\core\Verification.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClCompile Include="src\environment\Path.cpp">
+      <Filter>src\environment</Filter>
+    </ClCompile>
+    <ClInclude Include="src\environment\Path.h">
+      <Filter>src\environment</Filter>
+    </ClInclude>
+    <ClCompile Include="src\environment\Sky.cpp">
+      <Filter>src\environment</Filter>
+    </ClCompile>
+    <ClInclude Include="src\environment\Sky.h">
+      <Filter>src\environment</Filter>
+    </ClInclude>
+    <ClCompile Include="src\environment\Terrain.cpp">
+      <Filter>src\environment</Filter>
+    </ClCompile>
+    <ClInclude Include="src\environment\Terrain.h">
+      <Filter>src\environment</Filter>
+    </ClInclude>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\objects\HayBale.cpp">
+      <Filter>src\objects</Filter>
+    </ClCompile>
+    <ClInclude Include="src\objects\HayBale.h">
+      <Filter>src\objects</Filter>
+    </ClInclude>
+    <ClCompile Include="src\objects\Rock.cpp">
+      <Filter>src\objects</Filter>
+    </ClCompile>
+    <ClInclude Include="src\objects\Rock.h">
+      <Filter>src\objects</Filter>
+    </ClInclude>
+    <ClCompile Include="src\structures\Barn.cpp">
+      <Filter>src\structures</Filter>
+    </ClCompile>
+    <ClInclude Include="src\structures\Barn.h">
+      <Filter>src\structures</Filter>
+    </ClInclude>
+    <ClCompile Include="src\structures\Fence.cpp">
+      <Filter>src\structures</Filter>
+    </ClCompile>
+    <ClInclude Include="src\structures\Fence.h">
+      <Filter>src\structures</Filter>
+    </ClInclude>
+    <ClCompile Include="src\structures\Windmill.cpp">
+      <Filter>src\structures</Filter>
+    </ClCompile>
+    <ClInclude Include="src\structures\Windmill.h">
+      <Filter>src\structures</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\AnimationSystem.h">
+      <Filter>src\systems</Filter>
+    </ClInclude>
+    <ClCompile Include="src\systems\GrassCuttingSystem.cpp">
+      <Filter>src\systems</Filter>
+    </ClCompile>
+    <ClInclude Include="src\systems\GrassCuttingSystem.h">
+      <Filter>src\systems</Filter>
+    </ClInclude>
+    <ClCompile Include="src\systems\WindSystem.cpp">
+      <Filter>src\systems</Filter>
+    </ClCompile>
+    <ClInclude Include="src\systems\WindSystem.h">
+      <Filter>src\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\Constants.h">
+      <Filter>src\utils</Filter>
+    </ClInclude>
+    <ClCompile Include="src\utils\Helpers.cpp">
+      <Filter>src\utils</Filter>
+    </ClCompile>
+    <ClInclude Include="src\utils\Helpers.h">
+      <Filter>src\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\MathUtils.h">
+      <Filter>src\utils</Filter>
+    </ClInclude>
+    <ClCompile Include="src\vegetation\Crop.cpp">
+      <Filter>src\vegetation</Filter>
+    </ClCompile>
+    <ClInclude Include="src\vegetation\Crop.h">
+      <Filter>src\vegetation</Filter>
+    </ClInclude>
+    <ClCompile Include="src\vegetation\Grass.cpp">
+      <Filter>src\vegetation</Filter>
+    </ClCompile>
+    <ClInclude Include="src\vegetation\Grass.h">
+      <Filter>src\vegetation</Filter>
+    </ClInclude>
+    <ClCompile Include="src\vegetation\Tree.cpp">
+      <Filter>src\vegetation</Filter>
+    </ClCompile>
+    <ClInclude Include="src\vegetation\Tree.h">
+      <Filter>src\vegetation</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

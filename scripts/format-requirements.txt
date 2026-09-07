@@ -1,0 +1,9 @@
+cmakelang==0.6.13
+markdown-it-py==4.2.0
+mdformat==1.0.0
+mdformat-gfm==1.0.0
+mdit-py-plugins==0.6.1
+mdurl==0.1.2
+ruff==0.16.6
+six==1.17.0
+wcwidth==0.8.3
