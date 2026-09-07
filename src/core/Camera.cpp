@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Text.h"
 #include "../structures/Barn.h"
 #include <GL/freeglut.h>
 #include <algorithm>
@@ -12,7 +13,7 @@ void Camera::update(float dt, const std::array<bool, 256>& keys,
                 right * (float(keys['d']) - float(keys['a']));
     move.y = float(keys['e']) - float(keys['q']);
     if (length(move) > 0) {
-        customName = "Free camera";
+        customName = "view.free";
         position = position + normalized(move) * (Constants::CAMERA_SPEED * dt);
     }
     position.x = std::clamp(position.x, -34.0f, 34.0f);
@@ -21,7 +22,7 @@ void Camera::update(float dt, const std::array<bool, 256>& keys,
 }
 void Camera::look(float dx, float dy) {
     if (dx != 0 || dy != 0)
-        customName = "Free camera";
+        customName = "view.free";
     yaw = std::remainder(yaw + dx, 360.0f);
     pitch = std::clamp(pitch + dy, -80.0f, 80.0f);
 }
@@ -36,7 +37,7 @@ void Camera::overview() {
 }
 void Camera::fieldView() {
     selected = View::Overview;
-    customName = "Meadow";
+    customName = "view.meadow";
     position = {-10, 1.65f, 17};
     yaw = -90;
     pitch = -12;
@@ -93,10 +94,10 @@ void Camera::setView(View view) {
 void Camera::cycleView() {
     setView(static_cast<View>((static_cast<int>(selected) + 1) % static_cast<int>(View::Count)));
 }
-const char* Camera::viewName() const {
+const std::string& Camera::viewName() const {
     if (customName)
-        return customName;
-    const char* names[]{"Overview",   "Front of farm",   "Back of farm",   "Left side",
-                        "Right side", "Inside the barn", "Barn from left", "Barn from right"};
-    return names[static_cast<int>(selected)];
+        return Text::get(customName);
+    const char* names[]{"view.overview", "view.front", "view.back",      "view.left",
+                        "view.right",    "view.barn",  "view.barn_left", "view.barn_right"};
+    return Text::get(names[static_cast<int>(selected)]);
 }

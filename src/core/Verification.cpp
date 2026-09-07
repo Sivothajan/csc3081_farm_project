@@ -1,5 +1,6 @@
 #include "Verification.h"
 #include "Scene.h"
+#include "Text.h"
 #include "../utils/Font.h"
 #include <iostream>
 #include <stdexcept>
@@ -42,6 +43,8 @@ RunOptions RunOptions::parse(int argc, char** argv) {
             o.wireframe = true;
         else if (key == "--no-hud")
             o.noHud = true;
+        else if (key == "--no-study")
+            o.noStudy = true;
         else
             throw std::runtime_error("Unknown option: " + key);
     }
@@ -109,6 +112,8 @@ void Verification::prepare(Scene& scene, const RunOptions& o) {
         scene.key('f');
     if (o.noHud)
         scene.specialKey(GLUT_KEY_F10);
+    if (o.noStudy)
+        scene.key('b');
 }
 bool Verification::run(Scene& scene) {
     int failures = 0, checks = 0;
@@ -200,26 +205,40 @@ bool Verification::run(Scene& scene) {
     camera.look(0, 1000);
     check(camera.pitch <= 80, "Look pitch clamps before the vertical singularity");
     bool validViews = true;
+    bool sharedPanels = true;
     for (int i = 0; i < int(Camera::View::Count); ++i) {
         scene.specialKey(GLUT_KEY_F1 + i);
         Vec3 p = scene.camera.position;
+        sharedPanels &= scene.showDiagram && scene.showHud;
         validViews &= std::isfinite(scene.camera.yaw) && std::isfinite(scene.camera.pitch) &&
                       std::abs(p.x) <= 34 && p.z >= -34 && p.z <= 38 && p.y >= Constants::EYE_MIN &&
                       p.y <= 30 && std::abs(scene.camera.pitch) < 80;
     }
     check(validViews, "All eight camera shortcuts stay within valid exploration bounds");
+    check(sharedPanels, "Every camera keeps the shared panels and structural study visible");
     scene.key('\t');
-    check(std::string(scene.camera.viewName()) == "Overview",
+    check(scene.camera.viewName() == Text::get("view.overview"),
           "Cycling after the last barn side view returns to the overview");
     auto cowBeforeView = scene.herd.animals()[0].position();
     scene.specialKey(GLUT_KEY_F7);
     scene.specialKey(GLUT_KEY_F8);
     check(length(scene.herd.animals()[0].position() - cowBeforeView) == 0,
           "Changing camera sides leaves the farm simulation untouched");
+    scene.key('b');
+    scene.key('h');
+    scene.key('\t');
+    scene.key('v');
+    bool studyHidden = !scene.showDiagram;
+    scene.specialKey(GLUT_KEY_F8);
+    scene.key('b');
+    check(studyHidden && scene.showDiagram,
+          "B works in side views and camera changes preserve the chosen study visibility");
+    Vec3 hudCameraPosition = scene.camera.position;
     scene.specialKey(GLUT_KEY_F10);
     bool hidden = !scene.showHud;
     scene.specialKey(GLUT_KEY_F10);
-    check(hidden && scene.showHud, "F10 hides and restores the HUD without changing views");
+    check(hidden && scene.showHud && length(scene.camera.position - hudCameraPosition) == 0,
+          "F10 hides and restores all panels without moving the camera");
     Windmill millA, millB;
     for (int i = 0; i < 60; ++i)
         millA.update(1.0f / 60, 2);
@@ -366,6 +385,43 @@ bool Verification::run(Scene& scene) {
     check(TextureSet::loadBmp("assets/nonexistent.bmp") == 0,
           "Missing texture gracefully returns a color fallback");
     std::filesystem::create_directories("build/verification");
+    TextCatalog labels, defaultLabels;
+    const auto textFixture = std::filesystem::path("build/verification/text-fixture.txt");
+    {
+        std::ofstream fixture(textFixture, std::ios::binary);
+        fixture << "\xEF\xBB\xBF# Labels from a Windows text editor\r\n"
+                   "farm.title\t= Orchard Farm\r\n"
+                   "study.formula = Offset = wind x u^2\r\n";
+    }
+    check(labels.load(textFixture) && labels.get("farm.title") == "Orchard Farm" &&
+              labels.get("study.formula") == "Offset = wind x u^2" &&
+              labels.get("stall.1") == defaultLabels.get("stall.1"),
+          "Editable text accepts BOM, CRLF, comments and equals signs with missing-key defaults");
+    {
+        std::ofstream fixture(textFixture);
+        fixture << "farm.title = Incomplete edit\nThis line has no equals sign\n";
+    }
+    check(!labels.load(textFixture) && labels.get("farm.title") == "Orchard Farm",
+          "A malformed text edit preserves the complete previous set of labels");
+    {
+        std::ofstream fixture(textFixture);
+        fixture << "stall.1 = Buttercup\n";
+    }
+    check(labels.load(textFixture) && labels.get("stall.1") == "Buttercup" &&
+              labels.get("farm.title") == defaultLabels.get("farm.title"),
+          "Reloading text restores defaults for removed overrides and supports custom stall names");
+    check(!labels.load("build/verification/nonexistent-text.txt") &&
+              labels.get("stall.1") == "Buttercup",
+          "A missing text file preserves the last valid labels");
+    auto formatted =
+        Text::format("view.status", {{"view", "A{period}"}, {"period", "Night"}, {"count", "2"}});
+    check(
+        formatted.find("A{period}") != std::string::npos &&
+            formatted.find("{count}") == std::string::npos,
+        "Text placeholders substitute data without interpreting braces inside replacement values");
+    scene.specialKey(GLUT_KEY_F9);
+    check(scene.textNotice == Text::get("text.reloaded") && scene.textNoticeTime > 0,
+          "F9 reloads the shared text file and reports success");
     {
         std::ofstream bad("build/verification/invalid.bmp", std::ios::binary);
         bad << "BMbroken";

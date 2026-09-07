@@ -1,4 +1,5 @@
 #include "Herd.h"
+#include "../core/Text.h"
 #include <algorithm>
 
 namespace {
@@ -187,17 +188,17 @@ int Herd::sleepingCount() const {
 std::string Herd::status(bool night) const {
     switch (state) {
     case Phase::Grazing:
-        return "Grazing in the field";
+        return Text::get("herd.grazing");
     case Phase::Gathering:
-        return "Lining up at the pasture gate";
+        return Text::get("herd.gathering");
     case Phase::Entering:
-        return night ? "Walking into the barn" : "Entering barn / day queued";
+        return Text::get(night ? "herd.entering" : "herd.entering_day");
     case Phase::Sleeping:
-        return "Resting in separate stalls";
+        return Text::get("herd.sleeping");
     case Phase::Leaving:
-        return night ? "Leaving barn / night queued" : "Walking out to the field";
+        return Text::get(night ? "herd.leaving_night" : "herd.leaving");
     case Phase::Returning:
-        return night ? "Returning / night queued" : "Returning to grazing spots";
+        return Text::get(night ? "herd.returning_night" : "herd.returning");
     }
     return {};
 }

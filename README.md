@@ -65,13 +65,14 @@ when copying a build. Missing textures use fallback colors.
 | F2 / F3             | Farm front / back                |
 | F4 / F5             | Farm left / right                |
 | F6 / F7 / F8        | Barn center / left / right       |
+| F9                  | Reload the shared text file      |
 | F10                 | Hide / show on-screen help       |
 | + or = / -          | Increase / decrease wind         |
 | 0 / 1 / 2 / 3       | Wind off / low / medium / strong |
 | C / R               | Toggle cutting / restore grass   |
 | P                   | Pause animation and cutting      |
 | N                   | Toggle day/night                 |
-| B                   | Toggle the bend diagram          |
+| B                   | Toggle structural study          |
 | L / T / F           | Lighting / textures / wireframe  |
 | Esc or window close | Exit                             |
 
@@ -84,9 +85,23 @@ latest choice; cows already entering or leaving finish that passage before
 changing direction. **P** pauses the cows and doors along with the other
 animation.
 
-Use **F7** and **F8** to see the cows and stall signs from either side. Front,
-back, side and barn views use a smaller overlay; **F10** clears it for an
-unobstructed view. **V** returns to the overview and full controls.
+Use **F7** and **F8** to see the cows and stall signs from either side. Every
+camera uses the same compact overlays: farm status at the top left, wind at the
+top right, controls along the bottom, and structural study above them on the
+right. The farm fills the whole window. **B** toggles the study and **F10**
+hides all overlays. Camera changes preserve both choices.
+
+## Change the text
+
+Edit [assets/text.txt](assets/text.txt), save, and press **F9** to reload
+without rebuilding. It contains the title, author line, controls, camera names,
+herd messages, farm signs and individual stall names. For example, change
+`stall.1 = Stall 1` to `stall.1 = Buttercup`.
+
+Keep the keys and `{placeholders}` unchanged. Use plain ASCII text with one
+`key = value` per line. A malformed edit keeps the previous labels. When
+launched from the project folder, the app reads that folder's `assets/text.txt`;
+otherwise, it reads the copy beside the executable.
 
 ## Development
 

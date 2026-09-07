@@ -48,6 +48,8 @@ class Scene {
     Hud hud;
     bool showDiagram = true, lightingEnabled = true, wireframe = false;
     bool showHud = true;
+    float textNoticeTime = 0;
+    std::string textNotice;
     TextureSet textures;
     bool texturesEnabled = true;
     Sky sky;

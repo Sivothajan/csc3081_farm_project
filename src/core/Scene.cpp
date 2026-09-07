@@ -1,13 +1,17 @@
 #include "Scene.h"
+#include "Text.h"
 #include "../utils/Font.h"
 #include <GL/freeglut.h>
+#include <algorithm>
 void Scene::initialize(const std::filesystem::path& executable) {
+    Text::initialize(executable);
     grass.initialize();
     crops.initialize();
     textures.initialize(executable);
     Font::initialize(executable);
 }
 void Scene::update(float dt) {
+    textNoticeTime = std::max(0.0f, textNoticeTime - dt);
     const float step = animation.update(dt);
     wind.update(step);
     windmill.update(step, wind.getStrength());
@@ -21,14 +25,10 @@ void Scene::key(unsigned char key) {
         camera.overview();
     if (key == 'g')
         camera.fieldView();
-    if (key == 'h') {
+    if (key == 'h')
         camera.setView(Camera::View::Barn);
-        showDiagram = false;
-    }
-    if (key == '\t') {
+    if (key == '\t')
         camera.cycleView();
-        showDiagram = false;
-    }
     if (key == '+' || key == '=')
         wind.setStrength(wind.getStrength() + .25f);
     if (key == '-')
@@ -53,12 +53,15 @@ void Scene::key(unsigned char key) {
         sky.night = !sky.night;
 }
 void Scene::specialKey(int key) {
+    if (key == GLUT_KEY_F9) {
+        bool loaded = Text::reload();
+        textNotice = Text::get(loaded ? "text.reloaded" : "text.failed");
+        textNoticeTime = 5;
+    }
     if (key == GLUT_KEY_F10)
         showHud = !showHud;
-    if (key >= GLUT_KEY_F1 && key <= GLUT_KEY_F8) {
+    if (key >= GLUT_KEY_F1 && key <= GLUT_KEY_F8)
         camera.setView(static_cast<Camera::View>(key - GLUT_KEY_F1));
-        showDiagram = false;
-    }
 }
 void Scene::render(int width, int height) const {
     lighting.apply(sky.nightAmount, lightingEnabled);
@@ -82,9 +85,10 @@ void Scene::render(int width, int height) const {
     trees.render(wind);
     herd.render();
     cutting.render(camera.position);
-    if (showHud)
+    if (showHud) {
         hud.render(width, height, wind,
                    {cutting.enabled, animation.paused, showDiagram, grass.cutCount(),
                     camera.position.y, herd.status(sky.night), herd.sleepingCount(), sky.night,
-                    camera.viewName(), camera.focusedView()});
+                    camera.viewName(), textNoticeTime > 0 ? textNotice : ""});
+    }
 }

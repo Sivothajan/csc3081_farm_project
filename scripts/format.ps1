@@ -22,10 +22,11 @@ function Invoke-FormatTool {
 
 # Enumerate owned source folders, never dependency, build or IDE directories.
 $taskFiles = @(Get-ChildItem -LiteralPath $taskRoot -File -Force)
+$taskFiles += Get-Item -LiteralPath (Join-Path $taskRoot 'assets\text.txt')
 foreach ($taskFolder in @('src', 'docs', 'scripts', 'cmake')) {
     $taskFiles += Get-ChildItem -LiteralPath (Join-Path $taskRoot $taskFolder) -Recurse -File
 }
-$taskExtensions = @('.cpp', '.h', '.md', '.ps1', '.psd1', '.py', '.cmake', '.xml', '.vcxproj', '.filters', '.slnx')
+$taskExtensions = @('.cpp', '.h', '.md', '.ps1', '.psd1', '.py', '.cmake', '.xml', '.vcxproj', '.filters', '.slnx', '.txt', '.in')
 $taskNames = @('CMakeLists.txt', '.clang-format', '.editorconfig', '.gitattributes', '.gitignore', 'format-requirements.txt')
 $taskFiles = @($taskFiles | Where-Object {
         ($_.Extension -in $taskExtensions -or $_.Name -in $taskNames) -and

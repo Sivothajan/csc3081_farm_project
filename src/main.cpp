@@ -31,6 +31,10 @@ void display() {
         return;
     scene.background();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(55, double(width) / height, 0.08, 160);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     scene.camera.apply();
@@ -63,11 +67,6 @@ void display() {
 void reshape(int w, int h) {
     width = std::max(w, 1);
     height = std::max(h, 1);
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(55, double(width) / height, 0.08, 160);
-    glMatrixMode(GL_MODELVIEW);
 }
 void update(int) {
     // Timers belong to the application, not the window. Ignore an outstanding

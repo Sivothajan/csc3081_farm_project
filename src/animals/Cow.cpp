@@ -1,4 +1,5 @@
 #include "Cow.h"
+#include "../core/Text.h"
 #include "../utils/Helpers.h"
 #include <algorithm>
 void Cow::update(float value) {
@@ -93,7 +94,7 @@ void Cow::render() const {
         glDisable(GL_LIGHTING);
         glColor3f(.98f, .88f, .57f);
         glRasterPos3f(location.x - .16f, 1.65f + .06f * std::sin(time), location.z);
-        for (unsigned char c : std::string("z z"))
+        for (unsigned char c : Text::get("sleep.symbol"))
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
         glPopAttrib();
     }

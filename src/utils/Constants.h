@@ -1,7 +1,5 @@
 #pragma once
 namespace Constants {
-constexpr const char* AUTHOR_NAME = "Sivothayan .S";
-constexpr const char* REGISTRATION_NUMBER = "S/21/513";
 constexpr float PI = 3.14159265358979323846f;
 constexpr float CAMERA_SPEED = 6.0f;
 constexpr float EYE_MIN = 1.35f;

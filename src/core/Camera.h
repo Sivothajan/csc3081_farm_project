@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <string>
 #include "../utils/MathUtils.h"
 class Camera {
   public:
@@ -13,8 +14,7 @@ class Camera {
     void fieldView();
     void setView(View view);
     void cycleView();
-    const char* viewName() const;
-    bool focusedView() const { return selected != View::Overview; }
+    const std::string& viewName() const;
 
   private:
     View selected = View::Overview;

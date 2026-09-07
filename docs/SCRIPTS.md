@@ -41,7 +41,10 @@ To capture the barn routine directly from an existing Release/x64 build:
 `--time` advances the simulation by that many seconds. `--morning` first lets
 the herd settle for a night, then starts the requested daytime advance. The
 `--view` presets include `front`, `back`, `left`, `right`, `barn-left`, and
-`barn-right`. Add `--no-hud` to capture the scene without on-screen help.
+`barn-right`. Add `--no-hud` to capture the scene without on-screen help. Wind
+and structural study stay in their right-hand overlays in every view, including
+small windows. The scene always fills the window behind the overlays.
+`--no-study` captures the wind panel with the study switched off.
 
 ## Maintenance
 
@@ -74,6 +77,11 @@ are optional when simply building or running the farm. Font generation downloads
 a pinned, checksum-verified font into `build/font/` on its first run. The
 generated atlas, metrics and license are already included.
 
+The shared labels are in `assets/text.txt`. Save edits and press **F9** while
+running; no generation script is needed. Both build paths also embed the file as
+a fallback for missing assets or omitted keys. Generated text headers stay under
+`build/`, so the editable `.txt` file is the only source to maintain.
+
 ## Formatting
 
 ```powershell
@@ -97,8 +105,8 @@ The command uses clang-format for C++, mdformat with GitHub tables for Markdown,
 PSScriptAnalyzer for PowerShell, Ruff for Python, cmake-format for CMake, and
 the .NET XML writer for Visual Studio files. Other project configuration files
 receive UTF-8/LF and whitespace normalization. It covers root text files and
-`src/`, `docs/`, `scripts/`, and `cmake/`; assets, screenshots, dependencies,
-build outputs, and IDE settings are excluded.
+`src/`, `docs/`, `scripts/`, `cmake/`, and `assets/text.txt`; other assets,
+screenshots, dependencies, build outputs, and IDE settings are excluded.
 
 Visual Studio reads `.editorconfig` automatically when **Follow project coding
 conventions** is enabled. It controls indentation, encoding and whitespace for

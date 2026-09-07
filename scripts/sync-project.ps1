@@ -10,10 +10,11 @@ $taskGroup.SetAttribute('Label', 'FarmSources')
 [xml]$taskFilters = '<?xml version="1.0" encoding="utf-8"?><Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"><ItemGroup/><ItemGroup/></Project>'
 $taskFilterGroups = $taskFilters.DocumentElement.ChildNodes
 $taskFiles = Get-ChildItem -LiteralPath "$taskRoot\src" -Recurse -File | Where-Object { $_.Extension -in '.cpp', '.h' } | Sort-Object FullName
+$taskFiles = @((Get-Item -LiteralPath "$taskRoot\assets\text.txt")) + @($taskFiles)
 $taskFolders = @{}
 foreach ($taskFile in $taskFiles) {
     $taskRelative = $taskFile.FullName.Substring($taskRoot.Length + 1)
-    $taskType = if ($taskFile.Extension -eq '.cpp') { 'ClCompile' } else { 'ClInclude' }
+    $taskType = if ($taskFile.Extension -eq '.cpp') { 'ClCompile' } elseif ($taskFile.Extension -eq '.h') { 'ClInclude' } else { 'None' }
     $taskNode = $taskXml.CreateElement($taskType, $taskNs)
     $taskNode.SetAttribute('Include', $taskRelative)
     [void]$taskGroup.AppendChild($taskNode)

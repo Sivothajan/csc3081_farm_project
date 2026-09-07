@@ -1,4 +1,5 @@
 #include "Barn.h"
+#include "../core/Text.h"
 #include "../objects/HayBale.h"
 #include "../utils/Helpers.h"
 #include <algorithm>
@@ -80,7 +81,7 @@ void Barn::render(float nightAmount) const {
         }
         HayBale::bale({x, .33f, -3.55f}, .42f);
         Draw::beam({x, 3.8f, -3.25f}, {x, 3.04f, -3.25f}, .022f, wood, 6);
-        Draw::plaque({x, 2.74f, -3.25f}, "Stall " + std::to_string(i + 1), 1.32f, .62f);
+        Draw::plaque({x, 2.74f, -3.25f}, Text::get("stall." + std::to_string(i + 1)), 1.32f, .62f);
     }
     for (float x : {-2.85f, 2.85f}) {
         HayBale::bale({x, .34f, -1.4f}, .45f);

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="assets" />
     <Filter Include="src" />
     <Filter Include="src\animals" />
     <Filter Include="src\core" />
@@ -12,6 +13,9 @@
     <Filter Include="src\vegetation" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\text.txt">
+      <Filter>assets</Filter>
+    </None>
     <ClCompile Include="src\animals\Cow.cpp">
       <Filter>src\animals</Filter>
     </ClCompile>
@@ -46,6 +50,12 @@
       <Filter>src\core</Filter>
     </ClCompile>
     <ClInclude Include="src\core\Scene.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClCompile Include="src\core\Text.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClInclude Include="src\core\Text.h">
       <Filter>src\core</Filter>
     </ClInclude>
     <ClCompile Include="src\core\Texture.cpp">

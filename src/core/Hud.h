@@ -9,7 +9,7 @@ struct HudState {
     int sleepingCows;
     bool night;
     std::string viewName;
-    bool focusedView;
+    std::string textNotice;
 };
 class Hud {
   public:

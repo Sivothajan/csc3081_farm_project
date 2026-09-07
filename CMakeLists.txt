@@ -3,11 +3,14 @@ project(csc3081_farm_project LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(cmake/FreeGLUT.cmake)
+set(FARM_TEXT_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/assets/text.txt")
+include(cmake/EmbedText.cmake)
 find_package(OpenGL REQUIRED)
 file(GLOB_RECURSE FARM_SOURCES CONFIGURE_DEPENDS src/*.cpp src/*.h)
 add_executable(csc3081_farm_project ${FARM_SOURCES})
-target_include_directories(csc3081_farm_project
-                           PRIVATE "${freeglut_SOURCE_DIR}/include")
+target_include_directories(
+  csc3081_farm_project PRIVATE "${freeglut_SOURCE_DIR}/include"
+                               "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_link_libraries(csc3081_farm_project PRIVATE freeglut_static OpenGL::GL
                                                    OpenGL::GLU)
 target_compile_definitions(

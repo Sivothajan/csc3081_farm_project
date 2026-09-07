@@ -1,0 +1,58 @@
+# Shared farm text. Edit values after =, keep keys and {placeholders} unchanged.
+# Save as UTF-8 using plain ASCII characters, then press F9 in the farm to reload.
+
+farm.title = Willowfield
+farm.author = Sivothayan .S / S/21/513 / CSC3081
+day = Day
+night = Night
+view.status = {view} / {period} / {count} asleep
+view.overview = Overview
+view.front = Front of farm
+view.back = Back of farm
+view.left = Left side
+view.right = Right side
+view.barn = Inside the barn
+view.barn_left = Barn from left
+view.barn_right = Barn from right
+view.meadow = Meadow
+view.free = Free camera
+
+herd.grazing = Grazing in the field
+herd.gathering = Lining up at the pasture gate
+herd.entering = Walking into the barn
+herd.entering_day = Entering barn / day queued
+herd.sleeping = Resting in separate stalls
+herd.leaving = Walking out to the field
+herd.leaving_night = Leaving barn / night queued
+herd.returning = Returning to grazing spots
+herd.returning_night = Returning / night queued
+
+wind.title = Wind {value} / {maximum}
+wind.controls = +/- adjust / 0-3 presets
+wind.direction = Breeze toward +X / +Z
+wind.still = A still, quiet day
+study.title = Structural study / B to hide
+study.show = B to show structural study
+study.root = Root stays fixed
+study.tip = Tip moves most
+study.formula = Offset = wind x (height / total)^2
+animation.paused = Paused / P to resume
+
+help.move = WASD move / Arrows look / Q-E height
+help.actions = N day/night / P pause / C cut / R regrow
+help.views = Tab views / F9 reload text / F10 hide help
+cutting.on = Cutting on
+cutting.off = Cutting off
+cutting.status = {mode} / {count} grass blades cut
+cutting.ground = G: enter the meadow to cut
+text.reloaded = Text reloaded
+text.failed = Text reload failed / previous labels kept
+
+sign.meadow = Meadow
+sign.meadow_hint = C to cut grass
+sign.pasture = Cow pasture
+sign.wheat = Wheat field
+stall.1 = Stall 1
+stall.2 = Stall 2
+stall.3 = Stall 3
+sleep.symbol = z z

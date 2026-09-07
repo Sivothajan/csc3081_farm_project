@@ -144,7 +144,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)build\deps\$(Platform)\_deps\freeglut-src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)build\deps\$(Platform)\_deps\freeglut-src\include;$(ProjectDir)build\deps\$(Platform)\generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FREEGLUT_STATIC;GLUT_DISABLE_ATEXIT_HACK;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
     </ClCompile>
@@ -159,6 +159,7 @@ copy /Y "$(ProjectDir)build\deps\$(Platform)\_deps\freeglut-src\COPYING" "$(OutD
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup Label="FarmSources">
+    <None Include="assets\text.txt" />
     <ClCompile Include="src\animals\Cow.cpp" />
     <ClInclude Include="src\animals\Cow.h" />
     <ClCompile Include="src\core\Camera.cpp" />
@@ -171,6 +172,8 @@ copy /Y "$(ProjectDir)build\deps\$(Platform)\_deps\freeglut-src\COPYING" "$(OutD
     <ClInclude Include="src\core\Lighting.h" />
     <ClCompile Include="src\core\Scene.cpp" />
     <ClInclude Include="src\core\Scene.h" />
+    <ClCompile Include="src\core\Text.cpp" />
+    <ClInclude Include="src\core\Text.h" />
     <ClCompile Include="src\core\Texture.cpp" />
     <ClInclude Include="src\core\Texture.h" />
     <ClCompile Include="src\core\Verification.cpp" />

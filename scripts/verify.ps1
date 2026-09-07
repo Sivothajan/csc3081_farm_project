@@ -24,6 +24,8 @@ try {
         @{ Name = 'barn_right'; Args = @('--view', 'barn-right', '--night', '--time', '45') },
         @{ Name = 'barn_small'; Args = @('--view', 'barn-right', '--night', '--time', '45', '--width', '640', '--height', '480') },
         @{ Name = 'barn_no_hud'; Args = @('--view', 'barn-left', '--night', '--time', '45', '--no-hud') },
+        @{ Name = 'barn_no_study'; Args = @('--view', 'barn-left', '--night', '--time', '45', '--no-study') },
+        @{ Name = 'small_no_study'; Args = @('--view', 'right', '--no-study', '--width', '640', '--height', '480') },
         @{ Name = 'front'; Args = @('--view', 'front') },
         @{ Name = 'back'; Args = @('--view', 'back') },
         @{ Name = 'left'; Args = @('--view', 'left') },

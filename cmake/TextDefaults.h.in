@@ -1,0 +1,3 @@
+// Generated from assets/text.txt. Edit that file instead.
+#pragma once
+inline constexpr const char* defaultFarmText = R"FARMTEXT(@FARM_TEXT@)FARMTEXT";

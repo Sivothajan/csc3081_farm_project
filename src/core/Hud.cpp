@@ -1,16 +1,19 @@
 #include "Hud.h"
+#include "Text.h"
 #include "../utils/Helpers.h"
 #include "../utils/Font.h"
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
+
 namespace {
-void panel(float x, float y, float w, float h) {
-    glColor4f(.075f, .14f, .13f, .91f);
+void panel(float x, float y, float width, float height) {
+    glColor4f(.075f, .14f, .13f, .82f);
     glBegin(GL_QUADS);
     glVertex2f(x, y);
-    glVertex2f(x + w, y);
-    glVertex2f(x + w, y + h);
-    glVertex2f(x, y + h);
+    glVertex2f(x + width, y);
+    glVertex2f(x + width, y + height);
+    glVertex2f(x, y + height);
     glEnd();
 }
 void fitted(float x, float y, const std::string& value, float size, float width) {
@@ -18,7 +21,15 @@ void fitted(float x, float y, const std::string& value, float size, float width)
                std::min(size, size * width / std::max(Font::width(value, size), 1.0f)));
 }
 } // namespace
-void Hud::render(int width, int height, const WindSystem& wind, HudState s) const {
+void Hud::render(int width, int windowHeight, const WindSystem& wind, HudState s) const {
+    if (width <= 0 || windowHeight <= 0)
+        return;
+    // Anchor the panels to the window edges without changing the scene viewport.
+    float scale = std::min({1.0f, float(width) / 960, float(windowHeight) / 640});
+    float right = float(width) / scale, top = float(windowHeight) / scale - 12;
+    bool wide = right >= 1000;
+    float studyX = right - 280, leftWidth = std::min(360.0f, right - 304);
+    float leftTextWidth = leftWidth - 28, studyTextX = studyX + 14;
     glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT | GL_LINE_BIT | GL_POLYGON_BIT |
                  GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glDisable(GL_LIGHTING);
@@ -31,119 +42,94 @@ void Hud::render(int width, int height, const WindSystem& wind, HudState s) cons
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
-    gluOrtho2D(0, width, 0, height);
+    gluOrtho2D(0, right, 0, float(windowHeight) / scale);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
-    float top = float(height), right = float(width);
-    bool compact = width < 900;
-    float body = compact ? 20.0f : 24.0f, small = compact ? 18.0f : 20.0f;
-    float leftWidth = std::min(420.0f, right - 296);
-    if (s.focusedView) {
-        panel(16, top - 84, right - 32, 68);
-        glColor3f(.95f, .88f, .65f);
-        Draw::text(32, top - 48, "Willowfield", 34);
-        Draw::text(right - 228, top - 45,
-                   std::string(s.night ? "Night" : "Day") + " / " + std::to_string(s.sleepingCows) +
-                       " cows asleep",
-                   small);
-        glColor3f(.78f, .84f, .75f);
-        Draw::text(32, top - 72, s.herdStatus + (s.paused ? " / Paused" : ""), small);
-    } else {
-        panel(16, top - 120, leftWidth, 104);
-        glColor3f(.95f, .88f, .65f);
-        Draw::text(32, top - 54, "Willowfield", compact ? 38.0f : 44.0f);
-        glColor3f(.76f, .83f, .73f);
-        Draw::text(32, top - 80, "CSC3081 / Interactive 3D farm", small);
-        fitted(32, top - 105,
-               std::string(Constants::AUTHOR_NAME) + " / " + Constants::REGISTRATION_NUMBER, small,
-               leftWidth - 32);
-        panel(16, top - 208, leftWidth, 80);
-        glColor3f(.96f, .88f, .65f);
-        Draw::text(32, top - 151, s.night ? "Night on the farm" : "Day on the farm", body);
-        glColor3f(.78f, .84f, .75f);
-        fitted(32, top - 176, s.herdStatus, small, leftWidth - 32);
-        Draw::text(32, top - 198, std::to_string(s.sleepingCows) + " of 3 cows asleep / H to visit",
-                   small);
-        panel(right - 264, top - 136, 248, 120);
-        glColor3f(.96f, .88f, .65f);
-        std::ostringstream label;
-        label << "Wind  " << std::fixed << std::setprecision(1) << wind.getStrength() << " / 3";
-        Draw::text(right - 248, top - 46, label.str(), body);
-        for (int i = 0; i < 12; ++i) {
-            float x = right - 248 + float(i) * 18;
-            bool active = float(i) < wind.getStrength() * 4;
-            glColor3f(active ? .82f : .25f, active ? .73f : .34f, active ? .37f : .28f);
-            glBegin(GL_QUADS);
-            glVertex2f(x, top - 73);
-            glVertex2f(x + 12, top - 73);
-            glVertex2f(x + 12, top - 62);
-            glVertex2f(x, top - 62);
-            glEnd();
-        }
-        glColor3f(.78f, .84f, .75f);
-        fitted(right - 248, top - 100, "+ / - adjust   0 / 1 / 2 / 3 presets", 18, 216);
-        fitted(right - 248, top - 124,
-               s.paused
-                   ? "Paused / P to resume"
-                   : (wind.getStrength() == 0 ? "A still, quiet day" : "Breeze toward +X / +Z"),
-               small, 216);
-    }
-    panel(16, 16, right - 32, s.focusedView ? 66.0f : 112.0f);
+
+    panel(12, top - 126, leftWidth, 126);
+    glColor3f(.96f, .89f, .68f);
+    fitted(26, top - 34, Text::get("farm.title"), 34, leftTextWidth);
+    glColor3f(.76f, .83f, .73f);
+    fitted(26, top - 57, Text::get("farm.author"), 18, leftTextWidth);
     glColor3f(.96f, .90f, .73f);
-    if (s.focusedView) {
-        fitted(32, 57, s.viewName + " / Tab next view / F1-F8 choose", body, right - 64);
-        fitted(32, 31, "WASD move   Arrows look   N day/night   P pause   F10 hide help", small,
-               right - 64);
-    } else {
-        fitted(32, 104, s.viewName + "   /   Tab next view   /   F1-F8 choose a view", body,
-               right - 64);
-        fitted(32, 79,
-               compact ? "WASD move   Arrows look   Q/E height   G meadow   H barn"
-                       : "WASD move   Arrows / right-drag look   Q/E height   G meadow   H barn   "
-                         "V overview",
-               small, right - 64);
-        fitted(32, 55,
-               "N day/night   P pause   C cut   R regrow   B study   L/T/F display   F10 help   "
-               "Esc exit",
-               small, right - 64);
-        std::ostringstream status;
-        status << (s.cutting ? "Cutting on" : "Cutting off") << "   /   " << s.cutCount
-               << " / 2300 blades cut";
-        if (s.cutting && s.height >= 2.6f)
-            status << "   |   G: enter meadow";
-        else if (s.cutting)
-            status << "   |   Walk to mow";
-        glColor3f(.79f, .83f, .60f);
-        fitted(32, 30, status.str(), small, right - 64);
+    fitted(26, top - 82,
+           Text::format("view.status", {{"view", s.viewName},
+                                        {"period", Text::get(s.night ? "night" : "day")},
+                                        {"count", std::to_string(s.sleepingCows)}}),
+           22, leftTextWidth);
+    glColor3f(.78f, .84f, .75f);
+    fitted(26, top - 107, s.paused ? Text::get("animation.paused") : s.herdStatus, 18,
+           leftTextWidth);
+
+    float controlsWidth = wide ? (right - 76) / 2 : right - 52;
+    float controlsRight = right / 2 + 12;
+    panel(12, 12, right - 24, wide ? 68.0f : 96.0f);
+    glColor3f(.96f, .90f, .73f);
+    fitted(26, wide ? 56.0f : 85.0f, Text::get("help.move"), 20, controlsWidth);
+    fitted(wide ? controlsRight : 26, wide ? 56.0f : 65.0f, Text::get("help.actions"), 20,
+           controlsWidth);
+    fitted(26, wide ? 30.0f : 45.0f, Text::get("help.views"), 20, controlsWidth);
+    std::string status = Text::format(
+        "cutting.status", {{"mode", Text::get(s.cutting ? "cutting.on" : "cutting.off")},
+                           {"count", std::to_string(s.cutCount)}});
+    if (s.cutting && s.height >= 2.6f)
+        status = Text::get("cutting.ground");
+    if (!s.textNotice.empty())
+        status = s.textNotice;
+    glColor3f(.79f, .83f, .60f);
+    fitted(wide ? controlsRight : 26, wide ? 30.0f : 25.0f, status, 18, controlsWidth);
+
+    std::ostringstream value, maximum;
+    value << std::fixed << std::setprecision(1) << wind.getStrength();
+    maximum << Constants::WIND_MAX;
+    panel(studyX, top - 104, 268, 104);
+    glColor3f(.96f, .89f, .68f);
+    fitted(studyTextX, top - 31,
+           Text::format("wind.title", {{"value", value.str()}, {"maximum", maximum.str()}}), 26,
+           240);
+    for (int i = 0; i < 12; ++i) {
+        float x = studyTextX + float(i) * 20;
+        bool active = float(i) < wind.getStrength() * 4;
+        glColor3f(active ? .82f : .25f, active ? .73f : .34f, active ? .37f : .28f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, top - 50);
+        glVertex2f(x + 15, top - 50);
+        glVertex2f(x + 15, top - 42);
+        glVertex2f(x, top - 42);
+        glEnd();
     }
-    if (s.diagram && !s.focusedView && width >= 800 && height >= 550) {
-        float x = right - 286, y = 144;
-        panel(x, y, 270, 250);
-        glColor3f(.96f, .89f, .69f);
-        fitted(x + 16, y + 220, "Bend study / B to hide", 24, 238);
-        glColor3f(.66f, .73f, .65f);
-        fitted(x + 16, y + 196, "Same root, more movement at the tip", 18, 238);
-        float bx = x + 72, by = y + 58, scale = 115;
+    glColor3f(.78f, .84f, .75f);
+    fitted(studyTextX, top - 71, Text::get("wind.controls"), 17, 240);
+    fitted(studyTextX, top - 93,
+           Text::get(wind.getStrength() == 0 ? "wind.still" : "wind.direction"), 17, 240);
+
+    float studyBottom = wide ? 92.0f : 120.0f;
+    float studyTop = studyBottom + (s.diagram ? 136.0f : 36.0f);
+    panel(studyX, studyBottom, 268, studyTop - studyBottom);
+    glColor3f(.96f, .89f, .68f);
+    fitted(studyTextX, studyTop - 25, Text::get(s.diagram ? "study.title" : "study.show"), 20, 240);
+    if (s.diagram) {
+        float bx = studyTextX + 24, by = studyBottom + 30, graphScale = 64;
         glLineWidth(1);
         glColor3f(.42f, .49f, .44f);
         glBegin(GL_LINES);
         glVertex2f(bx, by);
-        glVertex2f(bx, by + scale);
+        glVertex2f(bx, by + graphScale);
         glEnd();
         glLineWidth(3);
         glColor3f(.88f, .77f, .36f);
         glBegin(GL_LINE_STRIP);
         const Vec3 root{-10, 0, 10};
-        for (int i = 0; i <= 5; ++i) {
-            float u = float(i) / 5;
-            Vec3 offset = wind.bend(root, 1, u, .8f) - root;
-            glVertex2f(bx + offset.x * scale, by + offset.y * scale);
+        for (int i = 0; i <= 10; ++i) {
+            Vec3 offset = wind.bend(root, 1, float(i) / 10, .8f) - root;
+            glVertex2f(bx + offset.x * graphScale, by + offset.y * graphScale);
         }
         glEnd();
-        glColor3f(.88f, .90f, .74f);
-        Draw::text(bx - 23, by - 20, "Fixed root", 18);
-        fitted(x + 16, y + 14, "Offset = wind x (height / total)^2", 18, 238);
+        glColor3f(.78f, .84f, .75f);
+        fitted(studyTextX + 102, studyBottom + 82, Text::get("study.root"), 18, 138);
+        fitted(studyTextX + 102, studyBottom + 58, Text::get("study.tip"), 18, 138);
+        fitted(studyTextX, studyBottom + 12, Text::get("study.formula"), 17, 240);
     }
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
