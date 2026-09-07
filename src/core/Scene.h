@@ -11,7 +11,7 @@
 #include "../vegetation/Grass.h"
 #include "../vegetation/Crop.h"
 #include "../vegetation/Tree.h"
-#include "../animals/Cow.h"
+#include "../systems/Herd.h"
 #include "../systems/AnimationSystem.h"
 #include "../systems/GrassCuttingSystem.h"
 #include "Hud.h"
@@ -27,6 +27,7 @@ class Scene {
     void update(float dt);
     void render(int width, int height) const;
     void key(unsigned char key);
+    void specialKey(int key);
 
   private:
     Terrain terrain;
@@ -41,11 +42,12 @@ class Scene {
     Grass grass;
     Crop crops;
     Tree trees;
-    std::array<Cow, 3> cows{{Cow({9, 0, 10}, 0), Cow({16, 0, 12}, 12), Cow({9, 0, 18}, 20)}};
+    Herd herd;
     AnimationSystem animation;
     GrassCuttingSystem cutting;
     Hud hud;
     bool showDiagram = true, lightingEnabled = true, wireframe = false;
+    bool showHud = true;
     TextureSet textures;
     bool texturesEnabled = true;
     Sky sky;

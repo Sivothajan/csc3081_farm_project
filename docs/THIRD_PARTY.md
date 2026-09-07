@@ -15,6 +15,16 @@
   [source archive](https://codeload.github.com/freeglut/freeglut/zip/refs/tags/v3.8.0)
   SHA-256: `66c12fbf41ef5da34a386d59dbd389e30b601124937f8edb81a30a5006247f93`.
 
+## Patrick Hand
+
+- Handwriting by Patrick Wagesreiter, from
+  [Google Fonts](https://github.com/google/fonts/tree/aeb9574d3cb4ab2ac5de70a8c730b11662281803/ofl/patrickhand).
+- The generated atlas and glyph metrics use the
+  [SIL Open Font License 1.1](../assets/fonts/OFL.txt).
+- The atlas ships in `assets/fonts/`; no font installation or download is needed
+  to run the farm. Regenerate it with
+  [generate-font.py](../scripts/generate-font.py).
+
 ## References
 
 Conceptual references; no code or images were copied from these pages:
@@ -24,5 +34,5 @@ Conceptual references; no code or images were copied from these pages:
 - Tiago Sousa,
   [GPU Gems 3: Vegetation Procedural Animation](https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-16-vegetation-procedural-animation-and-shading-crysis).
 
-Farm geometry and textures were created for this project. Textures can be
-regenerated with [generate-textures.py](../scripts/generate-textures.py).
+Farm geometry and the four material textures were created for this project. They
+can be regenerated with [generate-textures.py](../scripts/generate-textures.py).

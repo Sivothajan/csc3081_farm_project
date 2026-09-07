@@ -6,7 +6,8 @@ struct RunOptions {
     int width = 1280, height = 800;
     int benchmarkFrames = 0;
     float time = 4, wind = 1.2f;
-    bool selfTest = false, night = false, cutDemo = false, noTextures = false, wireframe = false;
+    bool selfTest = false, night = false, morning = false, cutDemo = false, noTextures = false,
+         wireframe = false, noHud = false;
     static RunOptions parse(int argc, char** argv);
 };
 class Verification {

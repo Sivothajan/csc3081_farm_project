@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "../structures/Barn.h"
 #include <GL/freeglut.h>
 #include <algorithm>
 void Camera::update(float dt, const std::array<bool, 256>& keys,
@@ -10,13 +11,17 @@ void Camera::update(float dt, const std::array<bool, 256>& keys,
     Vec3 move = forward * (float(keys['w']) - float(keys['s'])) +
                 right * (float(keys['d']) - float(keys['a']));
     move.y = float(keys['e']) - float(keys['q']);
-    if (length(move) > 0)
+    if (length(move) > 0) {
+        customName = "Free camera";
         position = position + normalized(move) * (Constants::CAMERA_SPEED * dt);
+    }
     position.x = std::clamp(position.x, -34.0f, 34.0f);
     position.z = std::clamp(position.z, -34.0f, 38.0f);
     position.y = std::clamp(position.y, Constants::EYE_MIN, 30.0f);
 }
 void Camera::look(float dx, float dy) {
+    if (dx != 0 || dy != 0)
+        customName = "Free camera";
     yaw = std::remainder(yaw + dx, 360.0f);
     pitch = std::clamp(pitch + dy, -80.0f, 80.0f);
 }
@@ -27,12 +32,71 @@ void Camera::apply() const {
     gluLookAt(position.x, position.y, position.z, target.x, target.y, target.z, 0, 1, 0);
 }
 void Camera::overview() {
-    position = {33, 27, 37};
-    yaw = -132;
-    pitch = -29.5f;
+    setView(View::Overview);
 }
 void Camera::fieldView() {
+    selected = View::Overview;
+    customName = "Meadow";
     position = {-10, 1.65f, 17};
     yaw = -90;
     pitch = -12;
+}
+void Camera::aimAt(Vec3 target) {
+    Vec3 direction = target - position;
+    yaw = std::atan2(direction.z, direction.x) * 180 / Constants::PI;
+    pitch = std::atan2(direction.y, std::hypot(direction.x, direction.z)) * 180 / Constants::PI;
+}
+void Camera::setView(View view) {
+    if (view < View::Overview || view >= View::Count)
+        return;
+    selected = view;
+    customName = nullptr;
+    Vec3 target{0, 0, 0};
+    switch (view) {
+    case View::Overview:
+        position = {33, 27, 37};
+        target = {0, 0, 0};
+        break;
+    case View::Front:
+        position = {0, 23, 38};
+        target = {0, 0, 0};
+        break;
+    case View::Back:
+        position = {0, 23, -34};
+        target = {0, 0, 3};
+        break;
+    case View::Left:
+        position = {-34, 23, 2};
+        target = {3, 0, 2};
+        break;
+    case View::Right:
+        position = {34, 23, 2};
+        target = {-3, 0, 2};
+        break;
+    case View::Barn:
+        position = Barn::viewPosition();
+        target = {-17, 1.2f, -9.8f};
+        break;
+    case View::BarnLeft:
+        position = {-19.8f, 3.1f, -5.0f};
+        target = {-16.6f, 1.45f, -9.8f};
+        break;
+    case View::BarnRight:
+        position = {-14.2f, 3.1f, -5.0f};
+        target = {-17.4f, 1.45f, -9.8f};
+        break;
+    case View::Count:
+        break;
+    }
+    aimAt(target);
+}
+void Camera::cycleView() {
+    setView(static_cast<View>((static_cast<int>(selected) + 1) % static_cast<int>(View::Count)));
+}
+const char* Camera::viewName() const {
+    if (customName)
+        return customName;
+    const char* names[]{"Overview",   "Front of farm",   "Back of farm",   "Left side",
+                        "Right side", "Inside the barn", "Barn from left", "Barn from right"};
+    return names[static_cast<int>(selected)];
 }

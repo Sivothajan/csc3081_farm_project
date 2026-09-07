@@ -1,18 +1,17 @@
 #include "Scene.h"
+#include "../utils/Font.h"
 #include <GL/freeglut.h>
 void Scene::initialize(const std::filesystem::path& executable) {
     grass.initialize();
     crops.initialize();
     textures.initialize(executable);
-    for (auto& cow : cows)
-        cow.update(0);
+    Font::initialize(executable);
 }
 void Scene::update(float dt) {
     const float step = animation.update(dt);
     wind.update(step);
     windmill.update(step, wind.getStrength());
-    for (auto& cow : cows)
-        cow.update(animation.time);
+    herd.update(step, sky.night, barn);
     sky.update(step);
     if (!animation.paused)
         cutting.update(grass, camera.position);
@@ -22,6 +21,14 @@ void Scene::key(unsigned char key) {
         camera.overview();
     if (key == 'g')
         camera.fieldView();
+    if (key == 'h') {
+        camera.setView(Camera::View::Barn);
+        showDiagram = false;
+    }
+    if (key == '\t') {
+        camera.cycleView();
+        showDiagram = false;
+    }
     if (key == '+' || key == '=')
         wind.setStrength(wind.getStrength() + .25f);
     if (key == '-')
@@ -45,8 +52,17 @@ void Scene::key(unsigned char key) {
     if (key == 'n')
         sky.night = !sky.night;
 }
+void Scene::specialKey(int key) {
+    if (key == GLUT_KEY_F10)
+        showHud = !showHud;
+    if (key >= GLUT_KEY_F1 && key <= GLUT_KEY_F8) {
+        camera.setView(static_cast<Camera::View>(key - GLUT_KEY_F1));
+        showDiagram = false;
+    }
+}
 void Scene::render(int width, int height) const {
     lighting.apply(sky.nightAmount, lightingEnabled);
+    barn.light(sky.nightAmount, lightingEnabled);
     glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
     sky.render(animation.time);
     terrain.render(textures, texturesEnabled);
@@ -56,7 +72,7 @@ void Scene::render(int width, int height) const {
     fence.render();
     glDisable(GL_TEXTURE_2D);
     windmill.render();
-    barn.render();
+    barn.render(sky.nightAmount);
     rocks.render();
     textures.bind(Surface::Hay, texturesEnabled);
     hay.render();
@@ -64,10 +80,11 @@ void Scene::render(int width, int height) const {
     grass.render(wind);
     crops.render(wind);
     trees.render(wind);
-    for (const auto& cow : cows)
-        cow.render();
+    herd.render();
     cutting.render(camera.position);
-    hud.render(
-        width, height, wind,
-        {cutting.enabled, animation.paused, showDiagram, grass.cutCount(), camera.position.y});
+    if (showHud)
+        hud.render(width, height, wind,
+                   {cutting.enabled, animation.paused, showDiagram, grass.cutCount(),
+                    camera.position.y, herd.status(sky.night), herd.sleepingCount(), sky.night,
+                    camera.viewName(), camera.focusedView()});
 }

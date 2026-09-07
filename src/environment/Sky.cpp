@@ -18,7 +18,7 @@ void Sky::render(float time) const {
         float x = std::fmod(float(i) * 19 + time * .25f, 100.0f) - 50;
         float z = -32 + float(i % 3) * 7;
         for (int j = 0; j < 4; ++j)
-            Draw::ellipsoid({x + float(j) * 1.4f, 15 + std::sin(float(j) * 1.6f), z},
+            Draw::ellipsoid({x + float(j) * 1.4f, 34 + std::sin(float(j) * 1.6f), z},
                             {2.3f, 1.2f, 1.7f}, color, 10, 7);
     }
     Draw::ellipsoid({-27, 25, -35}, {2.3f, 2.3f, 2.3f},

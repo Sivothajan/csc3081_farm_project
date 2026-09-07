@@ -1,4 +1,5 @@
 #include "Helpers.h"
+#include "Font.h"
 #include <algorithm>
 namespace Draw {
 void box(Vec3 p, Vec3 s, Vec3 c) {
@@ -72,28 +73,40 @@ void triangle(Vec3 a, Vec3 b, Vec3 c) {
     glVertex3f(b.x, b.y, b.z);
     glVertex3f(c.x, c.y, c.z);
 }
-void text(float x, float y, const std::string& value, void* font) {
-    glRasterPos2f(x, y);
-    for (unsigned char c : value)
-        glutBitmapCharacter(font, c);
+void text(float x, float y, const std::string& value, float size) {
+    Font::draw(x, y, value, size);
 }
-void sign(Vec3 p, const std::string& title) {
-    box({p.x, p.y + .8f, p.z}, {.12f, 1.6f, .12f}, {.40f, .28f, .16f});
-    box({p.x, p.y + 1.5f, p.z}, {2.2f, .65f, .12f}, {.19f, .29f, .24f});
-    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT | GL_LINE_BIT);
+void plaque(Vec3 center, const std::string& title, float width, float height,
+            const std::string& subtitle) {
+    GLfloat view[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, view);
+    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
-    float textWidth = float(
-        glutStrokeLength(GLUT_STROKE_ROMAN, reinterpret_cast<const unsigned char*>(title.c_str())));
-    float scale = std::min(.0023f, 1.94f / std::max(textWidth, 1.0f));
-    glColor3f(.97f, .91f, .70f);
-    glLineWidth(1.5f);
     glPushMatrix();
-    glTranslatef(p.x - textWidth * scale * .5f, p.y + 1.41f, p.z + .075f);
-    glScalef(scale, scale, scale);
-    for (unsigned char c : title)
-        glutStrokeCharacter(GLUT_STROKE_ROMAN, c);
+    glTranslatef(center.x, center.y, center.z);
+    // Keep the board upright but face its entire surface toward the camera.
+    glRotatef(std::atan2(-view[8], view[0]) * 180 / Constants::PI, 0, 1, 0);
+    box({0, 0, 0}, {width, height, .12f}, {.58f, .42f, .23f});
+    box({0, 0, .067f}, {width - .10f, height - .10f, .035f}, {.16f, .27f, .22f});
+    glTranslatef(0, 0, .09f);
+    float size = std::min(height * (subtitle.empty() ? .66f : .46f),
+                          (width - .28f) / std::max(Font::width(title, 1), .1f));
+    glColor3f(.99f, .93f, .75f);
+    text(-Font::width(title, size) / 2, subtitle.empty() ? -size * .33f : .015f, title, size);
+    if (!subtitle.empty()) {
+        float small = std::min(height * .27f, (width - .28f) / Font::width(subtitle, 1));
+        glColor3f(.85f, .84f, .65f);
+        text(-Font::width(subtitle, small) / 2, -height * .32f, subtitle, small);
+    }
     glPopMatrix();
+    glPopAttrib();
+}
+void sign(Vec3 p, const std::string& title, const std::string& subtitle) {
+    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
+    glDisable(GL_TEXTURE_2D);
+    box({p.x, p.y + 1, p.z}, {.14f, 2, .14f}, {.40f, .28f, .16f});
+    plaque(p + Vec3{0, 1.85f, 0}, title, 3.2f, 1, subtitle);
     glPopAttrib();
 }
 } // namespace Draw

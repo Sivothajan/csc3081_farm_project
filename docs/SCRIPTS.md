@@ -8,7 +8,7 @@ requires Python 3.11+ with pip.
 ## Build and check
 
 ```powershell
-# Build x64 Release and run the 30 behavior checks.
+# Build x64 Release and run the behavior checks.
 .\scripts\build.ps1 -Configuration Release -Platform x64 -Test
 
 # Build x64 Release, then check behavior, rendering, animation and window closure.
@@ -31,6 +31,18 @@ farm windows, saves framebuffer captures and logs under ignored
 `build/verification/`, and checks exit status and OpenGL errors. Captures need
 visual inspection to assess appearance.
 
+To capture the barn routine directly from an existing Release/x64 build:
+
+```powershell
+.\build\x64\Release\csc3081_farm_project.exe --capture build/verification/barn.bmp --view barn --night --time 45
+.\build\x64\Release\csc3081_farm_project.exe --capture build/verification/morning.bmp --view barn --morning --time 4
+```
+
+`--time` advances the simulation by that many seconds. `--morning` first lets
+the herd settle for a night, then starts the requested daytime advance. The
+`--view` presets include `front`, `back`, `left`, `right`, `barn-left`, and
+`barn-right`. Add `--no-hud` to capture the scene without on-screen help.
+
 ## Maintenance
 
 ```powershell
@@ -42,6 +54,12 @@ visual inspection to assess appearance.
 
 # Regenerate the four bundled BMP textures, overwriting the existing files.
 python .\scripts\generate-textures.py
+
+# Optionally regenerate the bundled handwriting atlas and metrics.
+python -m venv build/font/python
+.\build\font\python\Scripts\python.exe -m pip install Pillow==12.1.1
+.\build\font\python\Scripts\python.exe scripts/generate-font.py
+.\scripts\format.ps1
 ```
 
 `setup.ps1` defaults to Debug/x64. FreeGLUT is downloaded and its checksum
@@ -52,7 +70,9 @@ Clearing the cache requires internet access on the next build. Keep the
 generated `FREEGLUT-LICENSE.txt` when sharing an executable.
 
 The project and texture generation scripts modify project files and assets; they
-are optional when simply building or running the farm.
+are optional when simply building or running the farm. Font generation downloads
+a pinned, checksum-verified font into `build/font/` on its first run. The
+generated atlas, metrics and license are already included.
 
 ## Formatting
 

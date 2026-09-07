@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include <algorithm>
-GLuint TextureSet::loadBmp(const std::filesystem::path& path) {
+GLuint TextureSet::loadBmp(const std::filesystem::path& path, bool alphaMask) {
     std::ifstream file(path, std::ios::binary);
     if (!file)
         return 0;
@@ -44,8 +44,15 @@ GLuint TextureSet::loadBmp(const std::filesystem::path& path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    int result = gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, width, height, GL_RGB, GL_UNSIGNED_BYTE,
-                                   rgb.data());
+    std::vector<unsigned char> alpha;
+    if (alphaMask) {
+        alpha.resize(size_t(width) * height);
+        for (size_t i = 0; i < alpha.size(); ++i)
+            alpha[i] = rgb[i * 3];
+    }
+    GLenum format = alphaMask ? GL_ALPHA : GL_RGB;
+    int result = gluBuild2DMipmaps(GL_TEXTURE_2D, format, width, height, format, GL_UNSIGNED_BYTE,
+                                   alphaMask ? alpha.data() : rgb.data());
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     if (result != 0) {
         glDeleteTextures(1, &texture);

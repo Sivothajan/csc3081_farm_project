@@ -120,6 +120,12 @@
     <ClInclude Include="src\systems\GrassCuttingSystem.h">
       <Filter>src\systems</Filter>
     </ClInclude>
+    <ClCompile Include="src\systems\Herd.cpp">
+      <Filter>src\systems</Filter>
+    </ClCompile>
+    <ClInclude Include="src\systems\Herd.h">
+      <Filter>src\systems</Filter>
+    </ClInclude>
     <ClCompile Include="src\systems\WindSystem.cpp">
       <Filter>src\systems</Filter>
     </ClCompile>
@@ -127,6 +133,15 @@
       <Filter>src\systems</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\Constants.h">
+      <Filter>src\utils</Filter>
+    </ClInclude>
+    <ClCompile Include="src\utils\Font.cpp">
+      <Filter>src\utils</Filter>
+    </ClCompile>
+    <ClInclude Include="src\utils\Font.h">
+      <Filter>src\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\FontMetrics.h">
       <Filter>src\utils</Filter>
     </ClInclude>
     <ClCompile Include="src\utils\Helpers.cpp">

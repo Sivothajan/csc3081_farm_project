@@ -1,9 +1,15 @@
 #pragma once
 #include "../systems/WindSystem.h"
+#include <string>
 struct HudState {
     bool cutting, paused, diagram;
     int cutCount;
     float height;
+    std::string herdStatus;
+    int sleepingCows;
+    bool night;
+    std::string viewName;
+    bool focusedView;
 };
 class Hud {
   public:

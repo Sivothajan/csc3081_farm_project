@@ -42,8 +42,8 @@ void Tree::one(Vec3 p, float scale, float phase, const WindSystem& wind) const {
 void Tree::render(const WindSystem& wind) const {
     one({-19, 0, -18}, 1.1f, .2f, wind);
     one({-12, 0, -18}, .9f, 1.7f, wind);
-    one({-21, 0, -12}, .85f, 2.6f, wind);
-    one({-12, 0, -11}, .73f, .9f, wind);
+    one({-22, 0, -18}, .85f, 2.6f, wind);
+    one({-10.2f, 0, -15}, .73f, .9f, wind);
     one({11, 0, -21}, .85f, 2.0f, wind);
     one({20, 0, -21}, 1.05f, 3.0f, wind);
 }

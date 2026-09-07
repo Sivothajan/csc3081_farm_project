@@ -7,7 +7,7 @@ class TextureSet {
   public:
     void initialize(const std::filesystem::path& executable);
     void bind(Surface surface, bool enabled) const;
-    static GLuint loadBmp(const std::filesystem::path& path);
+    static GLuint loadBmp(const std::filesystem::path& path, bool alphaMask = false);
     int loadedCount() const;
 
   private:

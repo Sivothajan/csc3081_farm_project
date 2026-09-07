@@ -96,8 +96,11 @@ void keyboardUp(unsigned char key, int, int) {
     keys[static_cast<unsigned char>(std::tolower(key))] = false;
 }
 void specialDown(int key, int, int) {
-    if (key >= 0 && key < 256)
+    if (key >= 0 && key < 256) {
+        if (!special[key])
+            scene.specialKey(key);
         special[key] = true;
+    }
 }
 void specialUp(int key, int, int) {
     if (key >= 0 && key < 256)

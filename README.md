@@ -11,11 +11,16 @@ Deformation. Built with C++20, OpenGL and FreeGLUT for CSC3081.
 
 ## Features
 
-- Explore the farm with a movable perspective camera.
+- Explore the farm freely or switch between front, back, side and barn views.
+- Larger handwritten lettering and camera-facing signboards keep names readable
+  from different angles.
 - Adjust wind that bends grass, wheat, branches and leaves while keeping roots
   fixed.
 - Cut meadow grass and restore it to its original height.
 - Animated cows and windmill, farm structures, lighting, textures and day/night.
+- At night, cows line up, enter the barn through automatic doors, and sleep in
+  separate straw-lined stalls with hay storage. In the morning they return to
+  the field.
 
 ## Build and run
 
@@ -54,6 +59,13 @@ when copying a build. Missing textures use fallback colors.
 | Right mouse drag    | Look around                      |
 | Q / E               | Lower / raise camera             |
 | G / V               | Meadow view / overview           |
+| H                   | View the barn interior           |
+| Tab                 | Cycle through eight camera views |
+| F1                  | Overview                         |
+| F2 / F3             | Farm front / back                |
+| F4 / F5             | Farm left / right                |
+| F6 / F7 / F8        | Barn center / left / right       |
+| F10                 | Hide / show on-screen help       |
 | + or = / -          | Increase / decrease wind         |
 | 0 / 1 / 2 / 3       | Wind off / low / medium / strong |
 | C / R               | Toggle cutting / restore grass   |
@@ -65,6 +77,16 @@ when copying a build. Missing textures use fallback colors.
 
 Press **G**, then **C**, and walk through the meadow to cut grass. Cutting works
 near ground level; shortened grass remains until **R** is pressed.
+
+Press **N** to start the cows' night or morning routine and **H** to watch the
+stalls. The herd status shows its progress. Repeated **N** presses keep the
+latest choice; cows already entering or leaving finish that passage before
+changing direction. **P** pauses the cows and doors along with the other
+animation.
+
+Use **F7** and **F8** to see the cows and stall signs from either side. Front,
+back, side and barn views use a smaller overlay; **F10** clears it for an
+unobstructed view. **V** returns to the overview and full controls.
 
 ## Development
 
