@@ -110,6 +110,10 @@ scales with squared height, so the base stays fixed and the tip bends more.
 Camera bounds prevent leaving the area or moving below ground; objects do not
 block movement.
 
+For a beginner-friendly explanation of the code flow, important files, tuning
+parameters and common modification recipes, see the
+[code walkthrough](docs/CODE_WALKTHROUGH.md).
+
 Run the build, behavior, rendering and window-close checks with:
 
 ```powershell
