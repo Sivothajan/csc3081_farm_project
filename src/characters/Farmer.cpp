@@ -458,7 +458,7 @@ void Farmer::render(bool enabled) const {
         glPushMatrix();
         glTranslatef(side * .288f, 1.79f, 0);
         glRotatef(side * 8, 0, 0, 1);
-        bool carrying = side > 0 && nightRequested;
+        bool carrying = side > 0 && (Constants::DEMO_DAYTIME_LIGHTS || nightRequested);
         glRotatef(carrying ? -6
                            : side * std::sin(gait) * 23 * motion -
                                  (side < 0 && !nightRequested ? inspection * 48 : 0),
@@ -506,7 +506,7 @@ void Farmer::render(bool enabled) const {
     glPopAttrib();
 }
 void Farmer::light(float amount, bool enabled) const {
-    if (!enabled || amount < .001f || !nightRequested) {
+    if (!enabled || amount < .001f || (!Constants::DEMO_DAYTIME_LIGHTS && !nightRequested)) {
         glDisable(GL_LIGHT2);
         return;
     }

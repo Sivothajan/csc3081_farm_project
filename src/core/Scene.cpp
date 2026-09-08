@@ -76,9 +76,10 @@ void Scene::specialKey(int key) {
         camera.setView(static_cast<Camera::View>(key - GLUT_KEY_F1));
 }
 void Scene::render(int width, int height) const {
+    const float lampAmount = Constants::DEMO_DAYTIME_LIGHTS ? 1.0f : sky.nightAmount;
     lighting.apply(sky.nightAmount, lightingEnabled);
-    barn.light(sky.nightAmount, lightingEnabled);
-    farmer.light(sky.nightAmount, lightingEnabled);
+    barn.light(lampAmount, lightingEnabled);
+    farmer.light(lampAmount, lightingEnabled);
     glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
     sky.render(animation.time);
     terrain.render(textures, texturesEnabled);
@@ -88,7 +89,7 @@ void Scene::render(int width, int height) const {
     fence.render();
     glDisable(GL_TEXTURE_2D);
     windmill.render();
-    barn.render(sky.nightAmount);
+    barn.render(lampAmount);
     rocks.render();
     textures.bind(Surface::Hay, texturesEnabled);
     hay.render();
