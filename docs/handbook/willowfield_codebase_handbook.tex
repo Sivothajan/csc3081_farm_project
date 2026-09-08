@@ -117,6 +117,9 @@
 \newcommand{\paramrow}[4]{\code{#1} & \code{#2} & #3 & #4\\}
 
 \begin{document}
+% Digital handbook: do not insert blank pages to force right-hand openings.
+\let\cleardoublepage\clearpage
+\hypersetup{pageanchor=false}
 
 \begin{titlepage}
 	\centering
@@ -143,20 +146,23 @@
 
 	\begin{tcolorbox}[width=0.94\textwidth,colback=white,colframe=CodeBorder,boxrule=0.7pt,arc=2mm,left=4mm,right=4mm,top=3mm,bottom=3mm]
 		\noindent\makebox[0.36\linewidth][l]{\bfseries\color{Ink}Repository:}%
-		\href{https://github.com/Sivothajan/csc3081_farm_project/tree/de29e8f8a2b92f47097514f5d0ad8c3b512e058d}{\texttt{Sivothajan/csc3081\_farm\_project}}\par\vspace{0.15cm}
+		\href{https://github.com/Sivothajan/csc3081_farm_project/tree/695efa55384de87452d60e0aaabfff137de02fd4}{\texttt{Sivothajan/csc3081\_farm\_project}}\par\vspace{0.15cm}
 		\noindent\makebox[0.36\linewidth][l]{\bfseries\color{Ink}Project author:}%
 		Sivothayan .S -- S/21/513\par\vspace{0.15cm}
-		\noindent\makebox[0.36\linewidth][l]{\bfseries\color{Ink}Documentation snapshot:}%
-		main branch at \code{de29e8f} -- 7 September 2026\par\vspace{0.15cm}
-		\noindent\makebox[0.36\linewidth][l]{\bfseries\color{Ink}Full commit:}%
-		{\scriptsize\ttfamily de29e8f8a2b92f47097514f5d0ad8c3b512e058d}\par
+		\noindent\makebox[0.36\linewidth][l]{\bfseries\color{Ink}Code snapshot:}%
+		\code{main @ 695efa5} -- 8 September 2026\par\vspace{0.15cm}
+		\noindent\makebox[0.36\linewidth][l]{\bfseries\color{Ink}Full source commit:}%
+		{\scriptsize\ttfamily 695efa55384de87452d60e0aaabfff137de02fd4}\par\vspace{0.15cm}
+		\noindent\makebox[0.36\linewidth][l]{\bfseries\color{Ink}Release:}%
+		\href{https://github.com/Sivothajan/csc3081_farm_project/releases/tag/v0.2.0}{Mid Review -- v0.2.0}\par
 	\end{tcolorbox}
 
 	\vfill
-	{\footnotesize\color{Muted} The repository name above links to the exact commit snapshot documented here.}
+	{\footnotesize\color{Muted} This handbook documents the pushed code snapshot above. The release also includes the subsequently updated handbook source and PDF.}
 \end{titlepage}
 
 \frontmatter
+\hypersetup{pageanchor=true}
 \chapter*{How to use this handbook}
 \addcontentsline{toc}{chapter}{How to use this handbook}
 This document is designed for a reader who may know only basic C++ and very little OpenGL. You do not need to understand the entire project before changing it. The chapters build a mental model first, then explain each source module, then provide a customization cookbook.
@@ -169,10 +175,10 @@ The explanations deliberately repeat a few important ideas---especially coordina
 
 \section*{What is covered}
 \begin{itemize}
-	\item Every C++ subsystem under \file{src/}: animals, core, environment, objects, structures, systems, utilities, and vegetation.
+	\item Every C++ subsystem under \file{src/}: animals, characters, core, environment, objects, structures, systems, utilities, and vegetation.
 	\item Program startup, the FreeGLUT event loop, input, update timing, rendering order, camera movement and projection.
 	\item Geometry helpers, vectors, colors, textures, lighting, custom font rendering, the editable text catalog and the HUD.
-	\item Wind deformation, grass cutting, crops, trees, cow animation, herd state transitions and barn doors.
+	\item Wind deformation, grass cutting, crops, trees, cow animation, herd state transitions, barn doors, farmer walking and night patrols.
 	\item CMake, FreeGLUT dependency fetching, Visual Studio project support, build scripts, verification and asset generators.
 	\item Concrete recipes for changing positions, dimensions, colors, movement speeds, counts, camera presets, wind behavior, day/night, signs, controls and textures.
 	\item How to add a new object, new key binding, new camera view, new texture, and new animated system.
@@ -190,8 +196,10 @@ The explanations deliberately repeat a few important ideas---especially coordina
 	\bottomrule
 \end{tabularx}
 
+\begingroup
+\small
 \tableofcontents
-\listoftables
+\endgroup
 \clearpage
 
 \mainmatter
@@ -199,7 +207,7 @@ The explanations deliberately repeat a few important ideas---especially coordina
 
 \chapter{Project Overview}
 \section{What Willowfield is}
-Willowfield is an interactive 3D farm built using C++20, classic fixed-function OpenGL, GLU and FreeGLUT. The farm contains terrain, dirt and grass areas, paths, fences, a barn, windmill, hay bales, rocks, crops, trees, animated grass, cows, a day/night transition, lighting, textures, signs, a custom handwritten font and a HUD.
+Willowfield is an interactive 3D farm built using C++20, classic fixed-function OpenGL, GLU and FreeGLUT. The farm contains terrain, dirt and grass areas, paths, fences, a barn, windmill, hay bales, rocks, crops, trees, animated grass, cows, an articulated farmer, a day/night transition, lighting, textures, signs, a custom handwritten font and a HUD.
 
 The project is intentionally built from relatively small modules. There is no heavy game engine. Instead, each module sends drawing commands to OpenGL. This is excellent for learning because you can follow a visual object from its C++ function directly to the primitives that appear on screen.
 
@@ -223,7 +231,7 @@ The project is intentionally built from relatively small modules. There is no he
 		\node[box] (main) {\texttt{main.cpp}\\FreeGLUT loop};
 		\node[box,below=of main] (scene) {\texttt{Scene}\\coordinator};
 		\node[sys,below left=of scene] (core) {Core\\camera/HUD/light};
-		\node[sys,below=of scene] (systems) {Systems\\wind/herd/cutting};
+		\node[sys,below=of scene] (systems) {Systems\\wind/herd/farmer/cutting};
 		\node[sys,below right=of scene] (world) {World\\terrain/objects};
 		\node[sys,below=of systems] (draw) {Utilities\\math + drawing};
 		\draw[arr] (main)--(scene);
@@ -249,6 +257,7 @@ The project is intentionally built from relatively small modules. There is no he
 	\pathrow{src/structures/}{Barn, fences and windmill.}
 	\pathrow{src/objects/}{Hay bales, trough and rocks.}
 	\pathrow{src/animals/}{Cow model and individual movement/animation logic.}
+	\pathrow{src/characters/}{Farmer geometry, distance-driven walking, day/night routes and lantern.}
 	\pathrow{src/systems/}{Wind, herd state machine, animation pause/time and grass cutting.}
 	\pathrow{src/utils/}{Constants, vector math, drawing primitives and custom font support.}
 	\pathrow{assets/}{Runtime textures, generated handwriting atlas, and editable shared labels in \file{assets/text.txt}.}
@@ -262,7 +271,7 @@ The project is intentionally built from relatively small modules. There is no he
 \end{longtable}
 
 \section{Main runtime features}
-The current controls demonstrate how the modules are connected. Movement uses \keycap{W/A/S/D}; arrow keys or right mouse drag change viewing direction; \keycap{Q/E} changes camera height; \keycap{G} jumps to the meadow; \keycap{H} shows the barn; \keycap{Tab} cycles views; \keycap{N} requests day/night; \keycap{P} pauses animation; \keycap{C} enables grass cutting; \keycap{R} restores grass; \keycap{+/-} changes wind; \keycap{L/T/F} toggle lighting/textures/wireframe; \keycap{B} toggles the structural-study overlay; \keycap{F9} reloads shared labels from \file{assets/text.txt}; and \keycap{F10} hides all overlays.
+The current controls demonstrate how the modules are connected. Movement uses \keycap{W/A/S/D}; arrow keys or right mouse drag change viewing direction; \keycap{Q/E} changes camera height; \keycap{G} jumps to the meadow; \keycap{H} shows the barn; \keycap{J} follows the farmer; \keycap{U} stops/resumes only the farmer; \keycap{Tab} cycles views; \keycap{N} requests day/night; \keycap{P} pauses animation; \keycap{C} enables grass cutting; \keycap{R} restores grass; \keycap{+/-} changes wind; \keycap{L/T/F} toggle lighting/textures/wireframe; \keycap{B} toggles the structural-study overlay; \keycap{F9} reloads shared labels from \file{assets/text.txt}; and \keycap{F10} hides all overlays.
 
 \chapter{The Three Ideas That Explain Most of the Code}
 \section{Update and render are separate}
@@ -449,7 +458,7 @@ Right-mouse drag converts mouse pixel differences to yaw/pitch changes at \code{
 \end{filebox}
 
 \section{What the Scene owns}
-The scene owns a camera plus terrain, path, fence, windmill, barn, rocks, hay, lighting, wind, grass, crops, trees, herd, animation state, cutting system, HUD, textures and sky. It also stores a short-lived text-reload notice. The shared text catalog itself is global through the \code{Text} namespace. This means \code{Scene} remains the natural place to add a new top-level farm component.
+The scene owns a camera plus terrain, path, fence, windmill, barn, rocks, hay, lighting, wind, grass, crops, trees, herd, farmer, animation state, cutting system, HUD, textures and sky. It also stores a short-lived text-reload notice. The shared text catalog itself is global through the \code{Text} namespace. This means \code{Scene} remains the natural place to add a new top-level farm component.
 
 \begin{lstlisting}[language=C++]
 Terrain terrain;
@@ -465,6 +474,7 @@ Grass grass;
 Crop crops;
 Tree trees;
 Herd herd;
+Farmer farmer;
 AnimationSystem animation;
 GrassCuttingSystem cutting;
 Hud hud;
@@ -481,9 +491,10 @@ Text::initialize(executable);
 grass.initialize();
 crops.initialize();
 textures.initialize(executable);
+farmer.initialize(executable);
 Font::initialize(executable);
 \end{lstlisting}
-\code{Text::initialize()} first resolves the editable \file{assets/text.txt}; grass and crops then generate deterministic procedural layouts. Textures and the font atlas locate runtime assets relative to the executable, with a fallback to a local \file{assets} directory.
+\code{Text::initialize()} first resolves the editable \file{assets/text.txt}; grass and crops then generate deterministic procedural layouts. Shared textures, the farmer head bitmap and the font atlas locate runtime assets relative to the executable, with a fallback to a local \file{assets} directory.
 
 \section{Update order}
 \begin{center}
@@ -492,12 +503,13 @@ Font::initialize(executable);
 		\node[draw,rounded corners,below=of anim] (wind) {Wind time};
 		\node[draw,rounded corners,below=of wind] (mill) {Windmill rotation};
 		\node[draw,rounded corners,below=of mill] (herd) {Herd + barn doors};
-		\node[draw,rounded corners,below=of herd] (sky) {Sky transition};
+		\node[draw,rounded corners,below=of herd] (farmer) {Farmer pose + follow camera};
+		\node[draw,rounded corners,below=of farmer] (sky) {Sky transition};
 		\node[draw,rounded corners,below=of sky] (cut) {Grass cutting};
-		\draw[arr] (anim)--(wind); \draw[arr] (wind)--(mill); \draw[arr] (mill)--(herd); \draw[arr] (herd)--(sky); \draw[arr] (sky)--(cut);
+		\draw[arr] (anim)--(wind); \draw[arr] (wind)--(mill); \draw[arr] (mill)--(herd); \draw[arr] (herd)--(farmer); \draw[arr] (farmer)--(sky); \draw[arr] (sky)--(cut);
 	\end{tikzpicture}
 \end{center}
-Before animated systems advance, \code{textNoticeTime} is reduced so the F9 success/failure message disappears after five seconds. \code{AnimationSystem::update()} returns zero while paused, so downstream animated systems stop naturally.
+Before animated systems advance, \code{textNoticeTime} is reduced so the F9 success/failure message disappears after five seconds. \code{AnimationSystem::update()} returns zero while paused, so downstream animated systems stop naturally. The farmer receives \code{farmer.update(step, sky.night)}. If follow mode is active, \code{Scene} refreshes the camera from the new farmer position and forward vector before updating the sky.
 
 \section{Keyboard commands}
 \begin{longtable}{@{}lll@{}}
@@ -508,6 +520,8 @@ Before animated systems advance, \code{textNoticeTime} is reduced so the F9 succ
 	\keycap{V}      & Overview preset               & Camera             \\
 	\keycap{G}      & Meadow camera                 & Camera             \\
 	\keycap{H}      & Barn camera                   & Camera             \\
+	\keycap{J}      & Follow/release farmer camera   & Camera/Farmer      \\
+	\keycap{U}      & Stop/resume farmer            & Farmer             \\
 	\keycap{Tab}    & Next preset                   & Camera             \\
 	\keycap{+/=}    & Wind +0.25                    & WindSystem         \\
 	\keycap{-}      & Wind -0.25                    & WindSystem         \\
@@ -519,7 +533,7 @@ Before animated systems advance, \code{textNoticeTime} is reduced so the F9 succ
 	\keycap{L}      & Lighting on/off               & Lighting           \\
 	\keycap{F}      & Wireframe on/off              & Renderer           \\
 	\keycap{T}      & Textures on/off               & TextureSet usage   \\
-	\keycap{N}      & Toggle requested night        & Sky/Herd           \\
+	\keycap{N}      & Toggle requested night        & Sky/Herd/Farmer    \\
 	\keycap{F1..F8} & Camera preset                 & Camera             \\
 	\keycap{F9}     & Reload \file{assets/text.txt} & Text/HUD notice    \\
 	\keycap{F10}    & HUD on/off                    & Hud                \\
@@ -527,7 +541,7 @@ Before animated systems advance, \code{textNoticeTime} is reduced so the F9 succ
 \end{longtable}
 
 \section{Render order matters}
-The render function applies lighting and barn light, selects wireframe/fill mode, then draws sky, terrain, path, fence, windmill, barn, rocks, hay, vegetation, herd, cutting indicator and finally HUD.
+The render function applies global, barn and farmer-lantern lighting, selects wireframe/fill mode, then draws sky, terrain, path, fence, windmill, barn, rocks, hay, vegetation, herd, farmer, cutting indicator and finally HUD.
 
 \begin{beginnerbox}
 	Later drawing can depend on earlier OpenGL state. The code deliberately binds/turns off textures between groups. When adding a component, decide whether it needs textures, lighting, blending or wireframe and avoid leaking state into later components.
@@ -600,6 +614,11 @@ const std::string& Camera::viewName() const {
 \begin{editbox}
 	To create a more cinematic overview, edit only the Overview position/target in \file{src/core/Camera.cpp}. To change free-walk speed, edit \code{CAMERA_SPEED} in \file{src/utils/Constants.h}. Keep the position inside the clamp bounds or your preset will be corrected as soon as movement updates.
 \end{editbox}
+
+\section{Following the farmer}
+\keycap{J} toggles a separate follow mode, leaving the eight numbered presets unchanged. The camera's \code{followFarmer()} method places it 4.2 units ahead, 2.2 units to the side and 2.65 units above the farmer's ground position. It aims 1.4 units above that position, showing the face and clothing while the farmer turns and walks.
+
+\code{Scene::update()} refreshes this view after the farmer pose changes. Pressing \keycap{J} again, moving/looking manually or choosing another view releases it. The label is \code{view.farmer} in \file{assets/text.txt}.
 
 \chapter{Constants and Vector Math}
 \section{\texttt{src/utils/Constants.h}}
@@ -695,6 +714,9 @@ The fourth value 0 means this is a directional light rather than a point light.
 	For a warmer barn lamp, increase red relative to green/blue in the diffuse array. For a larger effective radius, reduce linear/quadratic attenuation values. Large reductions can make the light unrealistically strong across the whole farm.
 \end{editbox}
 
+\section{Farmer lantern}
+\code{Farmer::light()} uses \code{GL\_LIGHT2} for a warm point light at the character's lantern. The scene applies it before drawing world geometry. Its intensity follows \code{nightAmount}, and the global lighting toggle \keycap{L} disables it along with the other lights. The farmer carries the glowing lantern while night is requested, including the approach to the barn. Requesting morning removes the lantern and disables its light.
+
 \chapter{Textures and BMP Loading}
 \section{Surface categories}
 \file{src/core/Texture.h} defines four surfaces:
@@ -709,6 +731,20 @@ The corresponding BMP files are:
 	\item \file{assets/textures/structures/hay.bmp}
 \end{itemize}
 
+These four shared materials are separate from the farmer's head texture and the handwriting atlas. \code{Farmer} owns its head texture ID directly, so adding the farmer did not add another \code{Surface} enum value.
+
+\section{Farmer bitmap and attribution}
+The farmer's generic face uses \textbf{TheNess}'s \href{https://opengameart.org/content/human-male-body-and-head-texture-painted-with-adobe-animate}{Human male body and head texture (painted with Adobe Animate)}, published on OpenGameArt under \href{https://creativecommons.org/publicdomain/zero/1.0/}{CC0 1.0 Universal}. The original \href{https://opengameart.org/sites/default/files/head_texture.png}{head\_texture.png} is converted to an uncompressed 24-bit BMP, retaining the complete 150 by 150 image.
+
+\begin{itemize}
+	\item Runtime bitmap: \file{assets/textures/characters/farmer_head.bmp}.
+	\item Source, original-file checksum and conversion notes: \file{assets/textures/characters/SOURCE.txt}.
+	\item Full license: \file{assets/textures/characters/CC0-1.0.txt}.
+	\item Reproducible import: \file{scripts/import-farmer-texture.ps1}.
+\end{itemize}
+
+\code{Farmer::head()} maps the painted face region through UV coordinates onto a curved mesh. Hair, ears, hat, clothing, limbs and animation are procedural project code. No personal photograph or external human model is used. With textures disabled or the bitmap unavailable, modeled facial features provide a fallback. The asset is bundled; normal builds and runtime do not fetch it from the internet. See also \file{docs/THIRD_PARTY.md} for the complete resource inventory.
+
 \section{How the loader works}
 \code{TextureSet::loadBmp()} manually validates a simple 24-bit uncompressed BMP, reads padded rows, converts BGR file order into RGB, creates an OpenGL texture and builds mipmaps. It accepts dimensions up to 4096 in either direction.
 
@@ -720,7 +756,7 @@ The corresponding BMP files are:
 Missing textures are not fatal. Initialization prints a warning and leaves the texture ID at zero. \code{bind()} disables texturing when the requested texture is missing. This is why verification includes a no-assets startup test.
 
 \section{Texture generation}
-\file{scripts/generate-textures.py} procedurally creates the four 64x64 24-bit BMP textures with fixed random seeds 3081--3084. No third-party images or Python packages are needed.
+\file{scripts/generate-textures.py} procedurally creates the four 64x64 24-bit BMP material textures with fixed random seeds 3081--3084. That generator needs no third-party images or Python packages and does not modify the farmer bitmap.
 
 \chapter{Custom Font and World-Space Labels}
 \section{Files}
@@ -739,7 +775,7 @@ The documented maintenance flow creates a Python environment, installs Pillow 12
 
 \chapter{Editable Text Catalog: \texttt{assets/text.txt} and \texttt{Text.*}}
 \section{Why this system was added}
-User-facing wording is no longer scattered across \file{Hud.cpp}, \file{Camera.cpp}, \file{Path.cpp}, \file{Barn.cpp}, \file{Herd.cpp} and \file{Cow.cpp}. The repository now has one plain-text catalog at \file{assets/text.txt}. A beginner can rename the farm, signs, stalls, views and status messages without recompiling C++.
+User-facing wording is no longer scattered across \file{Hud.cpp}, \file{Camera.cpp}, \file{Path.cpp}, \file{Barn.cpp}, \file{Herd.cpp}, \file{Farmer.cpp} and \file{Cow.cpp}. The repository now has one plain-text catalog at \file{assets/text.txt}. A beginner can rename the farm, signs, stalls, views and status messages without recompiling C++.
 
 \begin{filebox}{assets/text.txt}
 	The editable source of user-facing labels. Each meaningful line is \code{key = value}. Lines starting with \code{\#} and blank lines are ignored.
@@ -760,6 +796,7 @@ User-facing wording is no longer scattered across \file{Hud.cpp}, \file{Camera.c
 	\code{farm.title}, \code{farm.author}    & HUD title and author/course line.                                       \\
 	\code{view.*}                            & Camera-view names and the combined view/day/sleep status line.          \\
 	\code{herd.*}                            & Grazing, gathering, entering, sleeping, leaving and returning messages. \\
+	\code{farmer.*}                          & Walking, crop inspection, stopped, transfer and guarding messages. \\
 	\code{wind.*}                            & Wind title, controls and still/breeze descriptions.                     \\
 	\code{study.*}                           & Structural-study title, hidden-state hint, root/tip labels and formula. \\
 	\code{help.*}                            & Bottom control-overlay lines.                                           \\
@@ -806,7 +843,7 @@ At startup the code first looks for \file{assets/text.txt} relative to the curre
 
 \chapter{HUD: On-Screen Information and Controls}
 \section{State passed to the HUD}
-\code{HudState} contains cutting status, pause status, whether the structural study is shown, cut-blade count, camera height, herd-status text, sleeping-cow count, day/night, camera-view name and an optional text-reload notice.
+\code{HudState} contains cutting status, pause status, whether the structural study is shown, cut-blade count, camera height, herd-status text, farmer-status text, sleeping-cow count, day/night, camera-view name and an optional text-reload notice.
 
 \section{Rendering mode}
 The HUD temporarily disables depth testing, lighting, textures and fog, enables alpha blending, switches to an orthographic projection, draws panels/text, then restores previous OpenGL state. It does \emph{not} shrink the 3D viewport; the farm continues to fill the whole window behind the overlays.
@@ -814,7 +851,7 @@ The HUD temporarily disables depth testing, lighting, textures and fog, enables 
 \section{Current compact layout}
 The latest HUD uses the same overlay concept in every camera view instead of a separate ``focused-view'' layout:
 \begin{itemize}
-	\item top-left: farm title, author line, localized view/day/asleep status, herd or pause status;
+	\item top-left: farm title, author line, localized view/day/asleep status, herd or pause status, and farmer activity;
 	\item top-right: wind value, 12-bar meter, controls and wind description;
 	\item bottom: movement/actions/view-help and cutting/reload status;
 	\item right above the bottom controls: structural-study panel, or a short \keycap{B} hint when hidden.
@@ -823,7 +860,7 @@ The latest HUD uses the same overlay concept in every camera view instead of a s
 The overlay scales down when the window is smaller than roughly 960x640. Internally, \code{scale} is the minimum of 1, \code{width/960}, and \code{height/640}; drawing coordinates are then expressed in a stable virtual space. The bottom controls switch between one/two-line arrangements using a \code{wide} check near virtual width 1000.
 
 \section{Text is data-driven}
-Nearly all visible wording comes through \code{Text::get()} or \code{Text::format()}. This includes title, author, view status, herd status, wind labels, help, cutting state and study labels. Edit \file{assets/text.txt} rather than hardcoding new strings in \file{Hud.cpp}.
+Nearly all visible wording comes through \code{Text::get()} or \code{Text::format()}. This includes title, author, view status, herd status, farmer status, wind labels, help, cutting state and study labels. Edit \file{assets/text.txt} rather than hardcoding new strings in \file{Hud.cpp}.
 
 \section{Things you can safely tune}
 \begin{longtable}{@{}p{0.32\textwidth}p{0.58\textwidth}@{}}
@@ -833,7 +870,7 @@ Nearly all visible wording comes through \code{Text::get()} or \code{Text::forma
 	\endhead
 	Panel background         & \code{panel()} in \file{src/core/Hud.cpp}; currently \rgb{.075f}{.14f}{.13f} with alpha .82. \\
 	All user-facing wording  & \file{assets/text.txt}; save and press \keycap{F9}.                                          \\
-	Top-left panel size      & \code{leftWidth} and the \code{126} panel height.                                            \\
+	Top-left panel size      & \code{leftWidth} and the \code{150} panel height.                                            \\
 	Wind panel position/size & \code{studyX}, width 268 and height 104.                                                     \\
 	Wind bar geometry        & 12 bars, 20-unit spacing, 15x8 rectangles.                                                   \\
 	Study panel height       & 136 units while visible, 36 while hidden.                                                    \\
@@ -979,7 +1016,13 @@ With 2800 blades and 5 segments, that is roughly \(2800\times5\times2=28{,}000\)
 
 \chapter{Crops: Wheat Rows}
 \section{Layout}
-Crops are generated in regular X rows from about -7.3 to 9 with 1.15 spacing, matching the terrain furrows. Rows close to the central path (\(|x|<2.2\)) are skipped. Z positions run from about -20.2 to -4.4 with 0.42 spacing.
+\file{Crop.h} declares a shared \code{rowCenters} array with 11 X coordinates:
+\begin{lstlisting}[language=C++]
+static constexpr std::array<float, 11> rowCenters{
+    -7.3f, -6.15f, -5.0f, -3.85f, -2.7f, 3.05f,
+    4.2f, 5.35f, 6.5f, 7.65f, 8.8f};
+\end{lstlisting}
+\code{Crop::initialize()} iterates this array. The central gap keeps the main path clear. Z positions run from about -20.2 to -4.4 with 0.42 spacing. \code{Farmer::makeRoute()} uses adjacent-row midpoints for four walking aisles; this keeps the path and stalk placement tied to the same coordinates.
 
 Each stalk height is approximately 1.3 to 1.8 units.
 
@@ -994,7 +1037,7 @@ A stalk uses two crossed ribbon axes so it has visible width from multiple viewi
 \end{itemize}
 
 \begin{editbox}
-	To increase crop density, reduce the X step 1.15 and/or Z step .42. If you change X spacing substantially, also change terrain furrow spacing so the plants still sit on their rows.
+	To increase crop density, edit \code{Crop::rowCenters} and/or reduce the Z step .42. Keep the array sorted, review the farmer aisle indices and clearance, and update the separately generated terrain furrows so the plants still sit on their rows.
 \end{editbox}
 
 \chapter{Trees}
@@ -1107,7 +1150,7 @@ The trough is also inside \file{HayBale.cpp}. A gray box at roughly \code{\{18,.
 	The simplest way to move the trough is to change its box center and all four X/Z coordinates of its water quad together. The simplest way to add a hay bale is to add another vector to the initializer list in \code{HayBale::render()}.
 \end{editbox}
 
-\part{Animals and Simulation Systems}
+\part{Characters, Animals and Simulation Systems}
 
 \chapter{Cow Model and Individual Animation}
 \section{State}
@@ -1202,6 +1245,96 @@ The state machine still owns the behavior, but \code{Herd::status()} now returns
 	The Herd code is the most behavior-sensitive module. Small route changes can affect door safety, queue spacing and verification invariants. After editing it, always run \file{scripts/verify.ps1} rather than relying only on visual inspection.
 \end{warningbox}
 
+\chapter[Farmer: Walking and Night Patrol]{Farmer: Walking, Crop Inspection and Night Patrol}
+\label{ch:farmer}
+\section{Files and responsibility}
+\file{src/characters/Farmer.h} declares the public update, render, lighting, position, forward-vector, pause and status APIs. \file{Farmer.cpp} builds the routes, evaluates the pose and draws the character. \code{Scene} owns one \code{Farmer} and starts it automatically.
+
+\begin{beginnerbox}
+	The same character has two jobs: tour the farm during the day and patrol the cow barn at night. The requested time of day is changed with \keycap{N}; there is no automatic day/night clock. Walking, stops and travel between the two routes happen automatically.
+\end{beginnerbox}
+
+\section{Model and outfit}
+The farmer is assembled from fitted meshes and drawing helpers: a straw hat, checked shirt, denim overalls with straps and buttons, a pocket, hands with fingers and work boots. \code{tailored()} connects elliptical rings instead of using a stack of boxes. Alternating quad colors form the checked shirt pattern. The head includes modeled hair, ears and a curved surface for the generic painted face.
+
+The online BMP and its CC0 source are documented in the texture chapter. The body, outfit, lantern and animation are implemented locally; no personal photograph or downloaded human model is used.
+
+\section{State and route samples}
+\begin{lstlisting}[language=C++]
+struct Sample {
+    Vec3 point;
+    double time, distance;
+    float rampIn = 0, rampOut = 0;
+};
+enum class Routine { Day, ToBarn, Night, ToFields };
+\end{lstlisting}
+
+The constructor builds \code{dayRoute} and \code{nightRoute}, then starts on the day circuit. \code{route} stores the active loop or temporary connecting path. Each sample records a world point, arrival time and accumulated path distance. A repeated point with a later time represents a stop. The double-precision \code{clock} follows the current route; \code{completedDistance} preserves gait continuity when a circuit wraps.
+
+\begin{longtable}{@{}p{0.23\textwidth}p{0.67\textwidth}@{}}
+	\toprule
+	State & Behavior \\
+	\midrule
+	\endhead
+	\code{Day} & Repeat the farm tour and inspect wheat. \\
+	\code{ToBarn} & Retrace the current circuit to its entrance and follow the connecting path to the barn. \\
+	\code{Night} & Walk around all four exterior sides of the barn, with two lookout stops. \\
+	\code{ToFields} & Leave the patrol and walk back to the daytime circuit. \\
+	\bottomrule
+\end{longtable}
+
+\section{Daytime destinations}
+\code{makeRoute(false)} defines a closed sequence of corner points starting at the farm center. The route visits the central and windmill paths, both wheat plots, the barn yard, meadow and pasture. Four crop aisles are computed from selected adjacent entries in \code{Crop::rowCenters}. The pasture route crosses the actual fence opening near X = 3, Z = 15.
+
+Most corners use a quadratic curve:
+\[
+P(u)=(1-u)^2E+2u(1-u)C+u^2X, \qquad 0\leq u\leq1.
+\]
+Here \(E\) is the corner entry, \(C\) the original corner, and \(X\) the exit. Sixteen samples approximate each curve. The radius is limited to 0.65 units and a quarter of each neighboring segment, keeping turns inside narrow aisles. Two wheat inspection points add 4.5-second stops with 0.55-second speed ramps before/after each stop.
+
+\section{Night patrol and continuous transfers}
+\code{makeRoute(true)} places a loop outside the barn, spanning X = -23 to -11.8 and Z = -14 to -1.2. The farmer carries a lantern and pauses at two points to look around. This guarding behavior is a patrol animation; the scene has no predator or combat simulation.
+
+\code{transfer()} starts from the exact current position, retraces the shorter part of the active circuit to its entrance, then appends the connecting path between the farm center and barn. This preserves the crop aisles and pasture gate instead of moving straight across obstacles. \code{activate()} starts the destination loop. Heading blends over 0.8 seconds at a route change.
+
+If \keycap{N} changes again while the farmer is transferring, he finishes that passage first and then honors the latest request. Returning to morning restores the complete daytime tour. The update loop can consume a large time step across a transfer boundary, which keeps deterministic captures consistent with ordinary playback.
+
+\begin{warningbox}
+	These are predefined routes, not general pathfinding or collision detection. Moving a barn wall, gate, crop row or path requires reviewing the corresponding corner lists and connecting paths. The farmer avoids stalk roots; wind-blown leaves can still brush the character.
+\end{warningbox}
+
+\section{Distance-driven walk cycle}
+\begin{lstlisting}[language=C++]
+constexpr float speed = 1.12f, stride = 1.32f;
+gait = float(std::fmod(travelled / stride, 1.0)) * 2 * Constants::PI;
+\end{lstlisting}
+
+Speed is measured in world units per second; stride is the distance for one complete gait cycle. \code{pose()} finds the surrounding route samples using \code{upper_bound}, evaluates acceleration/deceleration, interpolates position and looks slightly ahead to determine heading. Local +Z is the farmer's forward direction, so heading uses \code{atan2(direction.x, direction.z)}.
+
+In the renderer, feet alternate between ground contact and a lifted swing. \code{kneeBetween()} solves a two-segment leg from the hip and ankle positions, using upper/lower lengths 0.59 and 0.56. The body bobs and arms swing with the gait. Inspection pauses fade in head movement and a reaching gesture. At night the right hand carries the lantern while the left arm remains animated.
+
+\section{Controls, camera and HUD}
+\begin{itemize}
+	\item \keycap{U} toggles \code{walkingEnabled}, stopping only the farmer.
+	\item \keycap{P} pauses shared animation, including farmer, cows and doors.
+	\item \keycap{J} follows the farmer; manual camera input or another view releases it.
+	\item \keycap{N} requests the other day/night routine for farmer and herd.
+	\item \keycap{T} switches between the textured and modeled face; \keycap{L} controls scene lighting, including the lantern.
+\end{itemize}
+
+\code{statusKey()} returns a \code{farmer.*} key for walking, wheat rows, inspecting, stopped, heading to the barn, returning to the fields or guarding. \code{Scene::render()} resolves that key and passes it as \code{HudState::farmerStatus}. Change wording in \file{assets/text.txt} and reload with \keycap{F9}.
+
+\section{Checking the character}
+The behavior suite checks closed circuits, crop clearance, inspection stops, timing, all four night-patrol sides, transfer continuity, pause/resume and follow-camera controls. Render cases cover day, night, morning, wheat rows, meadow, pasture, small windows, wireframe and textures off. Close face captures check that the bitmap maps correctly onto the head.
+
+\begin{figure}[p]
+	\centering
+	\includegraphics[width=0.96\textwidth,height=0.34\textheight,keepaspectratio]{screenshots/farmer-day.png}
+	\par\vspace{8mm}
+	\includegraphics[width=0.96\textwidth,height=0.34\textheight,keepaspectratio]{screenshots/farmer-night.png}
+	\caption{Farmer follow views: daytime outfit and walking pose (top), and a lantern near the cow barn during the night routine (bottom).}
+\end{figure}
+
 \chapter{Animation System}
 \file{src/systems/AnimationSystem.h} is intentionally tiny:
 \begin{lstlisting}[language=C++]
@@ -1256,14 +1389,14 @@ This feature exists mainly for deterministic verification and screenshots. It av
 	\midrule
 	\endhead
 	\code{--capture PATH}       & Render and save a BMP frame, then exit.                                  \\
-	\code{--view NAME}          & Select overview/meadow/crops/cows/cutting/barn and several side presets. \\
+	\code{--view NAME}          & Select a farm preset, \code{farmer} follow view or \code{farmer-face} close-up. \\
 	\code{--time SECONDS}       & Advance simulation before capture.                                       \\
 	\code{--wind VALUE}         & Set wind strength.                                                       \\
 	\code{--width N --height N} & Set window/capture dimensions within validated limits.                   \\
 	\code{--benchmark N}        & Render N frames and report FPS / OpenGL errors.                          \\
 	\code{--self-test}          & Run behavior invariants and exit.                                        \\
 	\code{--night}              & Request night before advancing.                                          \\
-	\code{--morning}            & First settle into night, then request morning.                           \\
+	\code{--morning}            & Advance 60 seconds of night, request morning, then apply the selected time advance.                           \\
 	\code{--cut-demo}           & Pre-cut a path through the meadow.                                       \\
 	\code{--no-textures}        & Disable texture use.                                                     \\
 	\code{--wireframe}          & Render polygon lines.                                                    \\
@@ -1271,6 +1404,8 @@ This feature exists mainly for deterministic verification and screenshots. It av
 	\code{--no-study}           & Keep the HUD visible but hide the structural-study panel.                \\
 	\bottomrule
 \end{longtable}
+
+The \code{farmer} view frames the character after the requested simulation advance. Choose \code{farmer-face} for head texture inspection. \code{--morning} changes both herd and farmer targets; it does not assume that the farmer has already completed his return path.
 
 \section{What the self-test checks}
 The verification code checks, among other things:
@@ -1285,6 +1420,9 @@ The verification code checks, among other things:
 	\item Windmill rotation is frame-rate independent and stops at zero wind.
 	\item Cows walk/graze appropriately.
 	\item Herd line-up, door safety, single-file travel, sleeping placement and return behavior are correct.
+	\item Farmer loops and inspection stops are deterministic; routes clear crop stalks and use the pasture gate.
+	\item Night patrol covers all four barn sides; day/night transfers remain continuous, including repeated requests.
+	\item Farmer motion is consistent across update rates, respects both pause controls and supports follow-camera release.
 \end{itemize}
 
 \chapter{CMake Build System}
@@ -1332,7 +1470,9 @@ Finds Visual Studio with \code{vswhere.exe}, requires the x86/x64 C++ tools comp
 Finds CMake directly or through Visual Studio, configures the dependency-only CMake project under \file{build/deps/<platform>} and builds \code{freeglut\_static}. This separates dependency preparation from the main Visual Studio project.
 
 \section{\texttt{scripts/verify.ps1}}
-Runs an extensive Release/x64 verification suite. It can skip rebuilding and can refresh the README screenshot. It captures many cases: overview, still/windy meadow, cutting, crops, night, barn entry, sleeping, morning, empty barn, side barn views, small window, no-HUD, no-study, front/back/left/right, cows, wireframe and no-textures. It also benchmarks 180 frames, tests native window shutdown, tests startup with no assets, and checks the editable text-file behavior.
+Runs an extensive Release/x64 verification suite. It can skip rebuilding and can refresh the README screenshot. It captures many cases: overview, still/windy meadow, cutting, crops, night, barn entry, sleeping, morning, empty barn, side barn views, small window, no-HUD, no-study, front/back/left/right, cows, wireframe and no-textures. Farmer captures add close face, crop inspection, meadow, pasture, night patrol, morning return, small-window, wireframe and untextured views. It also benchmarks 180 frames, tests native window shutdown, tests startup with no assets, and checks the editable text-file behavior.
+
+For the farmer update, Windows Release/x64 verification passed 83 behavior checks, 36 render cases, five native window-close runs, missing-assets startup and the 180-frame benchmark. Successful rendering checks OpenGL errors and process status; appearance still requires visual inspection.
 
 \section{\texttt{scripts/test-shutdown.ps1}}
 Starts the native executable, waits until its window exists, sends a real close request through \code{CloseMainWindow()}, checks timely process exit and rejects FreeGLUT errors such as \code{no current window}. This protects the timer/close edge case handled by \code{closing} in \file{main.cpp}.
@@ -1342,6 +1482,12 @@ Rebuilds Visual Studio's source item list and Solution Explorer filters from the
 
 \section{Formatting}
 The project documentation describes \file{scripts/format.ps1} as orchestrating clang-format for C++, mdformat for Markdown, PSScriptAnalyzer for PowerShell, Ruff for Python, cmake-format for CMake and .NET XML rewriting for project XML. The owned-file set now explicitly includes \file{assets/text.txt} and \file{*.in} templates. Tools are cached under ignored build directories.
+
+\section{Farmer texture import}
+\file{scripts/import-farmer-texture.ps1} downloads the pinned source PNG, verifies its SHA-256 and uses Windows System.Drawing to write a 24-bit BMP with the same 150 by 150 pixels. Explicit source/destination pixel rectangles avoid DPI-based scaling. Source and CC0 notices remain beside the bitmap. The importer is optional because the runtime asset is already included.
+
+\section{Rebuilding this handbook}
+Run \code{pdflatex} from the repository root so the farmer screenshot paths resolve. Use \file{build/handbook/} for intermediate files, compile three passes to settle contents and cross-references, then copy the PDF to \file{docs/handbook/}. \file{docs/SCRIPTS.md} contains the exact PowerShell commands. Review the final log and rendered pages; the repository formatter does not process LaTeX.
 
 \chapter{Visual Studio Project Files and Editor Configuration}
 The repository includes \file{csc3081\_farm\_project.slnx}, \file{csc3081\_farm\_project.vcxproj} and \file{.vcxproj.filters}. These support opening/building in Visual Studio while CMake remains another supported build path.
@@ -1363,7 +1509,7 @@ This chapter is the fastest reference for common edits.
 	\midrule
 	\endhead
 	Camera movement speed      & \file{Constants.h}: \code{CAMERA_SPEED} & 6.0               & Global free-camera speed.                                                                \\
-	User-facing labels         & \file{assets/text.txt}                  & key/value catalog & Farm title, author, views, herd, help, signs, stalls and status wording; reload with F9. \\
+	User-facing labels         & \file{assets/text.txt}                  & key/value catalog & Farm title, author, views, herd, farmer, help, signs, stalls and status wording; reload with F9. \\
 	Lowest camera height       & \code{EYE_MIN}                          & 1.35              & Prevents going underground.                                                              \\
 	Max wind                   & \code{WIND_MAX}                         & 3.0               & Used by clamp and UI assumptions.                                                        \\
 	Cutting radius             & \code{CUT_RADIUS}                       & 1.8               & Also sizes yellow ring.                                                                  \\
@@ -1379,6 +1525,11 @@ This chapter is the fastest reference for common edits.
 	Cloud drift                & \file{Sky.cpp}                          & 0.25              & X units/second factor.                                                                   \\
 	Barn door rate             & \file{Barn.cpp}                         & 0.65              & Open/close normalized units per second.                                                  \\
 	Herd route speed           & \file{Herd.cpp}                         & 2.4               & Keep aligned with cow walk speed if desired.                                             \\
+	Farmer walk speed          & \file{Farmer.cpp}: \code{speed}         & 1.12 units/s      & Travel speed along sampled routes. \\
+	Farmer gait distance       & \file{Farmer.cpp}: \code{stride}        & 1.32 units        & Distance per full walk cycle. \\
+	Farmer stop duration       & \code{makeRoute()}                      & 4.5 s             & Two stops in each loop. \\
+	Farmer speed ramps         & \code{makeRoute()}                      & 0.55 s            & Ease into and out of stops. \\
+	Crop X coordinates         & \file{Crop.h}: \code{rowCenters}        & 11 rows           & Shared with farmer aisle calculation. \\
 	Herd queue gap             & \file{Herd.cpp}                         & 5                 & Single-file spacing.                                                                     \\
 	Cow field route radius     & \file{Cow.cpp}                          & 2.1               & Circular wandering radius.                                                               \\
 	Cow leg walk frequency     & \file{Cow.cpp}                          & 4.5 / 7           & Field/route leg oscillation.                                                             \\
@@ -1405,6 +1556,8 @@ Colors are usually \code{Vec3} values or direct \code{glColor3f}. Search within 
 	Cow white       & \rgb{.92}{.89}{.77}                 & \file{animals/Cow.cpp}         \\
 	Cow black       & \rgb{.16}{.19}{.17}                 & \file{animals/Cow.cpp}         \\
 	Cow pink        & \rgb{.75}{.49}{.40}                 & \file{animals/Cow.cpp}         \\
+	Farmer shirt    & \rgb{.64}{.23}{.14}                 & \file{characters/Farmer.cpp}   \\
+	Farmer overalls & \rgb{.12}{.26}{.37}                 & \file{characters/Farmer.cpp}   \\
 	Grass           & gradient around \rgb{.32}{.49}{.16} & \file{vegetation/Grass.cpp}    \\
 	Crop stalk      & \rgb{.58}{.57}{.20}                 & \file{vegetation/Crop.cpp}     \\
 	Tree trunk      & \rgb{.39}{.27}{.16}                 & \file{vegetation/Tree.cpp}     \\
@@ -1431,8 +1584,8 @@ For \code{Draw::box(center,size,color)}, \code{size.x} is width, \code{size.y} i
 	Risk   & Examples                              & Why                                                                \\
 	\midrule
 	Low    & Rock, hay bale, decorative tree, sign & Few/no other systems depend on coordinates.                        \\
-	Medium & Windmill, trough, crop field extents  & May overlap paths/fences but no route logic.                       \\
-	High   & Barn, pasture gate, central paths     & Herd routes, camera views, fences and verification depend on them. \\
+	Medium & Windmill, trough, crop field extents  & May overlap farmer paths; inspect route clearance.                       \\
+	High   & Barn, pasture gate, central paths     & Herd/farmer routes, cameras, fences and verification depend on them. \\
 	\bottomrule
 \end{tabularx}
 
@@ -1449,8 +1602,11 @@ The rotor uses \code{strength * 65 * dt}. Keep \code{fmod(...,360)} so the angle
 \section{Cow and herd}
 The individual cow route and the herd's path-following use related but separate values. If you globally want faster cows, update both and rerun verification.
 
+\section{Farmer}
+Change \code{speed} for travel pace and \code{stride} for distance per gait cycle in \file{Farmer.cpp}. Route corners and stop durations are in \code{makeRoute()}; day/night connecting points are in \code{transfer()}. Review crop-aisle indices and gate crossings if destinations move. Chapter~\ref{ch:farmer} explains the pose and route states.
+
 \section{Day/night}
-Sky visual fade and herd behavior trigger are conceptually separate. \code{sky.night} immediately changes the requested behavioral state, while \code{nightAmount} visually eases over time.
+The \keycap{N} key changes the target; time of day does not cycle automatically. Sky visual fade and herd/farmer behavior triggers are conceptually separate. \code{sky.night} immediately changes the requested behavioral state, while \code{nightAmount} visually eases over time.
 
 \chapter{Changing Grass and Crops}
 \section{More/less grass}
@@ -1460,9 +1616,12 @@ Change total loop count and meadow count. Keep meadow count \(\le\) total count.
 Every additional blade adds \code{GRASS_SEGMENTS * 2} triangles. Doubling blades roughly doubles grass geometry work. Reducing segments from 5 to 3 lowers geometry cost but makes bending visibly more angular.
 
 \section{Crop spacing}
-The crop generator and terrain furrow generator both use approximately 1.15 X spacing. Change them together.
+The crop generator reads the 11 X values in \code{Crop::rowCenters}. The farmer derives four aisle centers from selected adjacent values. Terrain furrows still use a separate approximately 1.15-spaced loop. Update these together, preserve the central path and run the farmer clearance checks.
 
 \chapter{Changing the Barn and Cow Routine}
+\section{Move the barn or pasture gate}
+Update barn geometry and its coordinate helpers, herd lanes, camera presets, fences and the farmer's night corners/transfer points together. The farmer's day route also uses the pasture gate. A moved wall or closed opening can invalidate a previously clear predefined route.
+
 \section{Change stall spacing}
 Current stall centers are separated by 1.5 in X. That value appears in both \code{Barn::aisle()} and \code{Barn::bed()}, and stall geometry in \file{Barn.cpp} uses the same spacing. Change all related expressions together.
 
@@ -1478,10 +1637,10 @@ This is \textbf{not} a one-line edit. The current Herd uses fixed \code{std::arr
 The preferred place for user-facing wording is now \file{assets/text.txt}. Change the value after \code{=} and keep the key unchanged. Save the file and press \keycap{F9}; the application attempts to reload it without rebuilding.
 
 \section{Author, registration and farm title}
-Edit \code{farm.author} and \code{farm.title}. The old \code{AUTHOR_NAME} and \code{REGISTRATION_NUMBER} constants were removed from \file{Constants.h}.
+Edit \code{farm.author} and \code{farm.title} in \file{assets/text.txt}.
 
-\section{Camera and herd wording}
-Edit \code{view.*} and \code{herd.*}. The camera and herd state machine now resolve these labels through the text catalog, so wording changes do not touch movement/behavior code.
+\section{Camera, herd and farmer wording}
+Edit \code{view.*}, \code{herd.*} and \code{farmer.*}. These labels are resolved through the text catalog, so wording changes do not touch movement/behavior code. \code{view.farmer} names the follow camera, while \code{help.views} includes the \keycap{J/U} controls.
 
 \section{World signs and stalls}
 Edit \code{sign.meadow}, \code{sign.meadow_hint}, \code{sign.pasture}, \code{sign.wheat} and \code{stall.1..3}. For example, \code{stall.1 = Buttercup} immediately renames the first plaque after an F9 reload.
@@ -1498,10 +1657,10 @@ The native window caption \code{"CSC3081 | Interactive 3D Farm"} still lives in 
 
 \chapter{Changing or Replacing Textures}
 \section{Drop-in replacement}
-The safest method is to preserve the same file name, location and 24-bit uncompressed BMP format. Keep a modest power-of-two size such as 64x64 or 128x128.
+The safest method is to preserve the same file name, location and 24-bit uncompressed BMP format. For tiled materials, keep a modest size such as 64x64 or 128x128. The farmer head is 150x150; preserve its layout or update the facial UV mapping as well.
 
-\section{Add a fifth texture type}
-You must:
+\section{Add a fifth shared surface type}
+The farmer head is loaded separately from this shared surface enum. To extend the enum, you must:
 \begin{enumerate}
 	\item Add an enum item before \code{Count} in \file{Texture.h}.
 	\item Increase/update the ID array size or derive it from \code{Count}.
@@ -1593,6 +1752,9 @@ Check \code{EYE_MIN} and Y clamp in \file{Camera.cpp}. Do not set preset positio
 \section{Cows do not enter barn}
 Inspect barn door opening state, \code{passable()}, lane coordinates, \code{Barn::aisle()} and \code{Barn::bed()}. Run \code{--self-test} for a precise failure label.
 
+\section{Farmer stops or has not reached the barn}
+Read the farmer activity row. \keycap{U} stops him, \keycap{P} pauses everyone, and scheduled stops last 4.5 seconds. A day/night transfer retraces the current loop before changing routes; repeated requests finish that transfer first.
+
 \section{Grass cuts while flying or does not cut}
 Check cutting enabled flag, camera Y threshold 2.6 and \code{CUT_RADIUS}. Use meadow view \keycap{G} to reach ground level.
 
@@ -1621,13 +1783,13 @@ The current project is readable, but many visual values are embedded directly in
 Create a \file{Theme.h} containing named colors such as \code{BarnRed}, \code{WoodDark}, \code{GrassBase}. This makes global recoloring easy.
 
 \section{Scene layout constants}
-Create \file{FarmLayout.h} for barn center, windmill center, pasture bounds, gate position and crop field bounds. Herd, camera and render modules could then share one source of truth.
+Create \file{FarmLayout.h} for barn center, windmill center, pasture bounds, gate position and crop field bounds. Herd, farmer, camera and render modules could then share these coordinates. \code{Crop::rowCenters} already shares crop X positions with farmer aisle generation, but terrain furrows and other layout values remain separate.
 
 \section{Configuration structs}
 Represent tree placements, hay bales, signs and camera presets as arrays of structs rather than repeated calls. That reduces copy/paste errors.
 
 \section{Derive fixed counts}
-Replace remaining hardcoded \code{3} cow/stall references with values derived from containers/configuration where reasonable. The previous hardcoded \code{2300} HUD total has already been removed, and user-facing wording has already moved to \file{assets/text.txt}.
+Where practical, derive cow and stall counts from their containers or configuration instead of hardcoding \code{3}. The previous hardcoded \code{2300} HUD total has already been removed, and user-facing wording has already moved to \file{assets/text.txt}.
 
 \section{Modern OpenGL path}
 For coursework demonstrating immediate mode, the current approach is understandable. For a larger project, batching geometry into vertex buffers, using shaders and instance rendering would improve scalability. This is an architectural migration, not a beginner customization.
@@ -1644,8 +1806,10 @@ For coursework demonstrating immediate mode, the current approach is understanda
 	\pathrow{src/main.cpp}{Entry point, GLUT callbacks, timing, input, window lifecycle, capture and benchmark orchestration.}
 	\pathrow{src/animals/Cow.h}{Cow interface and animation state.}
 	\pathrow{src/animals/Cow.cpp}{Field cycle, path walking, heading, sleep transition, cow geometry and catalog-backed sleep symbol.}
+	\pathrow{src/characters/Farmer.h}{Farmer route samples, routine state, pause, pose and rendering/light APIs.}
+	\pathrow{src/characters/Farmer.cpp}{Day tour, night patrol, continuous transfers, articulated geometry, face texture and lantern.}
 	\pathrow{src/core/Camera.h}{Camera state and view enum.}
-	\pathrow{src/core/Camera.cpp}{Movement, look, projection view transform and camera presets.}
+	\pathrow{src/core/Camera.cpp}{Movement, look, view transform, presets and farmer follow/release mode.}
 	\pathrow{src/core/Capture.h}{Frame capture declaration.}
 	\pathrow{src/core/Capture.cpp}{OpenGL framebuffer to BMP writer.}
 	\pathrow{src/core/Hud.h}{HUD state structure and renderer interface.}
@@ -1690,7 +1854,7 @@ For coursework demonstrating immediate mode, the current approach is understanda
 	\pathrow{src/utils/Helpers.h}{Drawing helper declarations.}
 	\pathrow{src/utils/Helpers.cpp}{Box, ellipsoid, beam, ground, triangle, text, plaque and sign helpers.}
 	\pathrow{src/utils/MathUtils.h}{Vec3 and vector/math helpers.}
-	\pathrow{src/vegetation/Crop.h}{Crop stalk data and interface.}
+	\pathrow{src/vegetation/Crop.h}{Crop stalk data, shared rowCenters coordinates and interface.}
 	\pathrow{src/vegetation/Crop.cpp}{Procedural wheat rows and wind-deformed stalk/leaf/head geometry.}
 	\pathrow{src/vegetation/Grass.h}{Grass blade data, render, cut/reset API.}
 	\pathrow{src/vegetation/Grass.cpp}{Deterministic blade generation, segmented bending, cutting and reset.}
@@ -1723,10 +1887,18 @@ For coursework demonstrating immediate mode, the current approach is understanda
 	\pathrow{scripts/format.ps1}{Multi-language formatter/checker orchestration.}
 	\pathrow{scripts/format-requirements.txt}{Pinned Python formatter requirements.}
 	\pathrow{scripts/generate-textures.py}{Procedural generation of four BMP material textures.}
+	\pathrow{scripts/import-farmer-texture.ps1}{Checks the online head PNG and converts it to a 24-bit BMP.}
 	\pathrow{scripts/generate-font.py}{Downloads/checks Patrick Hand, creates font atlas and metrics.}
 	\pathrow{docs/SCRIPTS.md}{Usage reference for build, verify, formatting, text reload and generation scripts.}
 	\pathrow{docs/CODE_WALKTHROUGH.md}{Repository-maintained beginner walkthrough covering code flow, tuning and common modification recipes.}
-	\pathrow{docs/THIRD\_PARTY.md}{FreeGLUT and Patrick Hand attribution/license/reference notes.}
+	\pathrow{docs/THIRD\_PARTY.md}{FreeGLUT, Patrick Hand and TheNess head-texture credits, licenses and references.}
+	\pathrow{docs/handbook/willowfield_codebase_handbook.tex}{LaTeX source for this handbook.}
+	\pathrow{docs/handbook/willowfield_codebase_handbook.pdf}{Compiled handbook.}
+	\pathrow{assets/textures/characters/farmer_head.bmp}{Generic painted head texture, converted to BMP.}
+	\pathrow{assets/textures/characters/SOURCE.txt}{Head texture author, source, checksum and conversion notes.}
+	\pathrow{assets/textures/characters/CC0-1.0.txt}{Full CC0 1.0 license for the head texture.}
+	\pathrow{screenshots/farmer-day.png}{Daytime farmer follow-view reference.}
+	\pathrow{screenshots/farmer-night.png}{Farmer with lantern near the barn at night.}
 	\pathrow{assets/fonts/handwriting.bmp}{Runtime custom font atlas.}
 	\pathrow{assets/fonts/OFL.txt}{SIL Open Font License for Patrick Hand-derived atlas.}
 	\pathrow{assets/textures/terrain/grass\_ground.bmp}{Ground material texture.}
@@ -1754,6 +1926,8 @@ For coursework demonstrating immediate mode, the current approach is understanda
 	G                  & Meadow view                             \\
 	V                  & Overview                                \\
 	H                  & Barn interior                           \\
+	J                  & Follow/release farmer camera             \\
+	U                  & Stop/resume only the farmer              \\
 	Tab                & Cycle eight camera views                \\
 	F1                 & Overview                                \\
 	F2 / F3            & Farm front / back                       \\
@@ -1793,6 +1967,11 @@ For coursework demonstrating immediate mode, the current approach is understanda
 # Refresh README overview screenshot while verifying
 .\scripts\verify.ps1 -SkipBuild -RefreshScreenshots
 
+# Farmer captures (day / night / morning)
+.\build\x64\Release\csc3081_farm_project.exe --capture build/verification/farmer.bmp --view farmer --time 4
+.\build\x64\Release\csc3081_farm_project.exe --capture build/verification/patrol.bmp --view farmer --night --time 80
+.\build\x64\Release\csc3081_farm_project.exe --capture build/verification/farmer-morning.bmp --view farmer --morning --time 80
+
 # CMake path
 cmake -S . -B build/cmake -A x64
 cmake --build build/cmake --config Release --parallel
@@ -1828,8 +2007,9 @@ For most appearance edits, you can safely work in one render module and use the 
 \begin{center}
 	\color{Muted}\small
 	\textbf{Documentation snapshot used by this handbook}\\[0.18cm]
-	\href{https://github.com/Sivothajan/csc3081_farm_project/tree/de29e8f8a2b92f47097514f5d0ad8c3b512e058d}{\texttt{Sivothajan/csc3081\_farm\_project @ de29e8f}}\\
-	Main branch state recorded on 7 September 2026.
+	\href{https://github.com/Sivothajan/csc3081_farm_project/tree/695efa55384de87452d60e0aaabfff137de02fd4}{\texttt{Sivothajan/csc3081\_farm\_project @ 695efa5}}\\
+	\code{main} branch code snapshot -- 8 September 2026.\\
+	\href{https://github.com/Sivothajan/csc3081_farm_project/releases/tag/v0.2.0}{Mid Review release -- v0.2.0}.
 \end{center}
 
 \end{document}
