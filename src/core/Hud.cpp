@@ -47,7 +47,7 @@ void Hud::render(int width, int windowHeight, const WindSystem& wind, HudState s
     glPushMatrix();
     glLoadIdentity();
 
-    panel(12, top - 126, leftWidth, 126);
+    panel(12, top - 150, leftWidth, 150);
     glColor3f(.96f, .89f, .68f);
     fitted(26, top - 34, Text::get("farm.title"), 34, leftTextWidth);
     glColor3f(.76f, .83f, .73f);
@@ -61,6 +61,8 @@ void Hud::render(int width, int windowHeight, const WindSystem& wind, HudState s
     glColor3f(.78f, .84f, .75f);
     fitted(26, top - 107, s.paused ? Text::get("animation.paused") : s.herdStatus, 18,
            leftTextWidth);
+
+    fitted(26, top - 132, s.farmerStatus, 18, leftTextWidth);
 
     float controlsWidth = wide ? (right - 76) / 2 : right - 52;
     float controlsRight = right / 2 + 12;

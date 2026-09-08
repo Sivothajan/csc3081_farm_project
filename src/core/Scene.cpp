@@ -8,6 +8,7 @@ void Scene::initialize(const std::filesystem::path& executable) {
     grass.initialize();
     crops.initialize();
     textures.initialize(executable);
+    farmer.initialize(executable);
     Font::initialize(executable);
 }
 void Scene::update(float dt) {
@@ -16,11 +17,22 @@ void Scene::update(float dt) {
     wind.update(step);
     windmill.update(step, wind.getStrength());
     herd.update(step, sky.night, barn);
+    farmer.update(step, sky.night);
+    if (camera.followingFarmer())
+        camera.followFarmer(farmer.position(), farmer.forward());
     sky.update(step);
     if (!animation.paused)
         cutting.update(grass, camera.position);
 }
 void Scene::key(unsigned char key) {
+    if (key == 'u')
+        farmer.toggleWalking();
+    if (key == 'j') {
+        if (camera.followingFarmer())
+            camera.stopFollowing();
+        else
+            camera.followFarmer(farmer.position(), farmer.forward());
+    }
     if (key == 'v')
         camera.overview();
     if (key == 'g')
@@ -66,6 +78,7 @@ void Scene::specialKey(int key) {
 void Scene::render(int width, int height) const {
     lighting.apply(sky.nightAmount, lightingEnabled);
     barn.light(sky.nightAmount, lightingEnabled);
+    farmer.light(sky.nightAmount, lightingEnabled);
     glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
     sky.render(animation.time);
     terrain.render(textures, texturesEnabled);
@@ -84,11 +97,13 @@ void Scene::render(int width, int height) const {
     crops.render(wind);
     trees.render(wind);
     herd.render();
+    farmer.render(texturesEnabled);
     cutting.render(camera.position);
     if (showHud) {
         hud.render(width, height, wind,
                    {cutting.enabled, animation.paused, showDiagram, grass.cutCount(),
                     camera.position.y, herd.status(sky.night), herd.sleepingCount(), sky.night,
-                    camera.viewName(), textNoticeTime > 0 ? textNotice : ""});
+                    camera.viewName(), textNoticeTime > 0 ? textNotice : "",
+                    Text::get(farmer.statusKey())});
     }
 }

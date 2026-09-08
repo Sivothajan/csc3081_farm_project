@@ -41,6 +41,7 @@ this document.
 - [Trees: `src/vegetation/Tree.*`](#trees-srcvegetationtree)
 - [Cows: `src/animals/Cow.*`](#cows-srcanimalscow)
 - [Herd State Machine](#herd-state-machine-srcsystemsherd)
+- [Farmer: `src/characters/Farmer.*`](#farmer-srccharactersfarmer)
 - [Barn: `src/structures/Barn.*`](#barn-srcstructuresbarn)
 - [Windmill: `src/structures/Windmill.*`](#windmill-srcstructureswindmill)
 - [Fence: `src/structures/Fence.*`](#fence-srcstructuresfence)
@@ -63,7 +64,8 @@ The program runs in this loop:
 1. `src/main.cpp` creates the OpenGL window.
 1. FreeGLUT calls input callbacks when the user presses keys or moves the mouse.
 1. FreeGLUT calls `update()` around every 16 ms.
-1. `update()` moves the camera, wind, cows, sky, windmill, and grass cutter.
+1. `update()` moves the camera, wind, cows, farmer, sky, windmill, and grass
+   cutter.
 1. FreeGLUT calls `display()`.
 1. `display()` asks `Scene` to draw the whole farm.
 
@@ -73,7 +75,7 @@ The most important files are:
 | --------------------------------------- | -------------------------------------------------------------------------- |
 | `src/main.cpp`                          | Application entry point, window setup, keyboard/mouse callbacks, main loop |
 | `src/core/Scene.*`                      | Owns all farm objects and decides update/render order                      |
-| `src/core/Camera.*`                     | Camera movement, fixed camera views, mouse/arrow look                      |
+| `src/core/Camera.*`                     | Camera movement, presets, farmer follow view, mouse/arrow look             |
 | `src/utils/Constants.h`                 | Small global tuning constants                                              |
 | `src/systems/WindSystem.*`              | Wind strength, wave timing, plant bending math                             |
 | `src/systems/GrassCuttingSystem.*`      | Grass cutting toggle and cutting radius marker                             |
@@ -82,6 +84,7 @@ The most important files are:
 | `src/vegetation/Tree.*`                 | Tree placement, branches, leaves, wind response                            |
 | `src/systems/Herd.*`                    | Cow night/morning behavior state machine                                   |
 | `src/animals/Cow.*`                     | Cow movement, walking animation, sleeping pose, drawing                    |
+| `src/characters/Farmer.*`               | Farmer model, walking routes, crop inspections and night patrol            |
 | `src/structures/Barn.*`                 | Barn geometry, stalls, doors, night light                                  |
 | `src/structures/Windmill.*`             | Windmill tower and rotating blades                                         |
 | `src/structures/Fence.*`                | Fence segment helper and fence layout                                      |
@@ -97,21 +100,23 @@ The most important files are:
 
 For simple tuning, start with these files:
 
-| Goal                         | File                                           | What to change                                |
-| ---------------------------- | ---------------------------------------------- | --------------------------------------------- |
-| Make camera faster/slower    | `src/utils/Constants.h`                        | `CAMERA_SPEED`                                |
-| Let camera go lower/higher   | `src/utils/Constants.h`, `src/core/Camera.cpp` | `EYE_MIN` and camera height clamps            |
-| Make max wind stronger       | `src/utils/Constants.h`                        | `WIND_MAX`                                    |
-| Change default wind          | `src/systems/WindSystem.h`                     | `strength = 1.2f`                             |
-| Change wind animation speed  | `src/systems/WindSystem.h`                     | `speed = 2.2f`                                |
-| Change cutting radius        | `src/utils/Constants.h`                        | `CUT_RADIUS`                                  |
-| Add more/fewer grass blades  | `src/vegetation/Grass.cpp`                     | `for (int i = 0; i < 2800; ++i)`              |
-| Move meadow grass area       | `src/vegetation/Grass.cpp`                     | meadow `x` and `z` formulas                   |
-| Move crop rows               | `src/vegetation/Crop.cpp`                      | crop `x` and `z` loop ranges                  |
-| Move trees                   | `src/vegetation/Tree.cpp`                      | calls to `one({x, y, z}, scale, phase, wind)` |
-| Rename signs/stalls/HUD text | `assets/text.txt`                              | values after `key =`                          |
-| Add a new keyboard shortcut  | `src/core/Scene.cpp`                           | `Scene::key()` or `Scene::specialKey()`       |
-| Add a new object to the farm | `src/core/Scene.h`, `src/core/Scene.cpp`       | add member, update, render                    |
+| Goal                         | File                                           | What to change                                      |
+| ---------------------------- | ---------------------------------------------- | --------------------------------------------------- |
+| Make camera faster/slower    | `src/utils/Constants.h`                        | `CAMERA_SPEED`                                      |
+| Let camera go lower/higher   | `src/utils/Constants.h`, `src/core/Camera.cpp` | `EYE_MIN` and camera height clamps                  |
+| Make max wind stronger       | `src/utils/Constants.h`                        | `WIND_MAX`                                          |
+| Change default wind          | `src/systems/WindSystem.h`                     | `strength = 1.2f`                                   |
+| Change wind animation speed  | `src/systems/WindSystem.h`                     | `speed = 2.2f`                                      |
+| Change cutting radius        | `src/utils/Constants.h`                        | `CUT_RADIUS`                                        |
+| Add more/fewer grass blades  | `src/vegetation/Grass.cpp`                     | `for (int i = 0; i < 2800; ++i)`                    |
+| Move meadow grass area       | `src/vegetation/Grass.cpp`                     | meadow `x` and `z` formulas                         |
+| Move crop rows               | `src/vegetation/Crop.h`, `Crop.cpp`            | shared `rowCenters` array and stalk `z` loop        |
+| Change farmer route or pace  | `src/characters/Farmer.cpp`                    | `makeRoute()`, `transfer()`, `speed`, `stride`      |
+| Change farmer clothing       | `src/characters/Farmer.cpp`                    | material colors, `tailored()`, `head()`, `render()` |
+| Move trees                   | `src/vegetation/Tree.cpp`                      | calls to `one({x, y, z}, scale, phase, wind)`       |
+| Rename signs/stalls/HUD text | `assets/text.txt`                              | values after `key =`                                |
+| Add a new keyboard shortcut  | `src/core/Scene.cpp`                           | `Scene::key()` or `Scene::specialKey()`             |
+| Add a new object to the farm | `src/core/Scene.h`, `src/core/Scene.cpp`       | add member, update, render                          |
 
 ## Coordinate System
 
@@ -205,6 +210,7 @@ Grass grass;
 Crop crops;
 Tree trees;
 Herd herd;
+Farmer farmer;
 AnimationSystem animation;
 GrassCuttingSystem cutting;
 Hud hud;
@@ -219,6 +225,8 @@ This loads the resources that need setup:
 - `grass.initialize()` creates random grass blades.
 - `crops.initialize()` creates crop stalks.
 - `textures.initialize(executable)` loads bitmap textures.
+- `farmer.initialize(executable)` loads the farmer head BMP; routes are built by
+  the constructor.
 - `Font::initialize(executable)` loads the bitmap font.
 
 ### `Scene::update(float dt)`
@@ -241,10 +249,16 @@ Returns either real `dt` or `0` if paused.
 wind.update(step);
 windmill.update(step, wind.getStrength());
 herd.update(step, sky.night, barn);
+farmer.update(step, sky.night);
+if (camera.followingFarmer())
+    camera.followFarmer(farmer.position(), farmer.forward());
 sky.update(step);
 ```
 
-Moves wind time, windmill rotation, cow behavior, and day/night transition.
+Moves wind time, windmill rotation, cow and farmer behavior, the following
+camera, and the day/night transition. Both characters read the requested
+`sky.night` state. **N** changes this state; there is no automatic day/night
+clock.
 
 ```cpp
 if (!animation.paused)
@@ -257,23 +271,25 @@ Cuts nearby grass only while animation is not paused.
 
 This handles normal keyboard keys:
 
-| Key                | Code effect                     |
-| ------------------ | ------------------------------- |
-| `v`                | overview camera                 |
-| `g`                | meadow camera                   |
-| `h`                | barn camera                     |
-| `Tab`              | cycle camera                    |
-| `+`, `=`           | increase wind                   |
-| `-`                | decrease wind                   |
-| `0`, `1`, `2`, `3` | set exact wind strength         |
-| `c`                | toggle cutting                  |
-| `r`                | reset grass                     |
-| `p`                | pause animation                 |
-| `b`                | toggle structural study diagram |
-| `l`                | toggle lighting                 |
-| `f`                | toggle wireframe                |
-| `t`                | toggle textures                 |
-| `n`                | toggle day/night                |
+| Key                | Code effect                      |
+| ------------------ | -------------------------------- |
+| `v`                | overview camera                  |
+| `g`                | meadow camera                    |
+| `h`                | barn camera                      |
+| `j`                | follow/release the farmer camera |
+| `u`                | stop/resume only the farmer      |
+| `Tab`              | cycle camera                     |
+| `+`, `=`           | increase wind                    |
+| `-`                | decrease wind                    |
+| `0`, `1`, `2`, `3` | set exact wind strength          |
+| `c`                | toggle cutting                   |
+| `r`                | reset grass                      |
+| `p`                | pause animation                  |
+| `b`                | toggle structural study diagram  |
+| `l`                | toggle lighting                  |
+| `f`                | toggle wireframe                 |
+| `t`                | toggle textures                  |
+| `n`                | toggle day/night                 |
 
 To add a new normal key, add another `if (key == 'x')` block here.
 
@@ -290,7 +306,8 @@ This handles function keys:
 This draws the farm in a deliberate order:
 
 1. Apply lighting.
-1. Apply barn night light.
+1. Apply barn night light (`GL_LIGHT1`).
+1. Apply the farmer lantern light (`GL_LIGHT2`).
 1. Set wireframe or filled drawing.
 1. Draw sky.
 1. Draw terrain.
@@ -304,6 +321,7 @@ This draws the farm in a deliberate order:
 1. Draw crops.
 1. Draw trees.
 1. Draw cows.
+1. Draw the farmer.
 1. Draw cutting circle.
 1. Draw HUD overlay.
 
@@ -374,6 +392,16 @@ To add another preset camera:
 1. Add a text key to `Camera::viewName()`.
 1. Add that text key to `assets/text.txt`.
 1. Add a shortcut in `Scene::specialKey()` or `Scene::key()`.
+
+### Follow the farmer
+
+**J** enables a separate follow mode; the eight **Tab/F1-F8** presets stay the
+same. `Camera::followFarmer()` positions the camera 4.2 units ahead, 2.2 units
+to the side and 2.65 units above the farmer, aiming at chest height. `Scene`
+refreshes it after each farmer update, so it follows turns and routine changes.
+
+Press **J** again, move/look manually or choose another view to leave this mode.
+The displayed name comes from `view.farmer` in `assets/text.txt`.
 
 ## Constants: `src/utils/Constants.h`
 
@@ -580,18 +608,21 @@ Use more points for a smoother circle or fewer for a rougher/debug style circle.
 
 `Crop::initialize()` places crop stalks in rows.
 
-This controls row spacing:
+Row X positions are shared in `Crop.h`:
 
 ```cpp
-for (float x = -7.3f; x < 9; x += 1.15f)
+static constexpr std::array<float, 11> rowCenters{
+    -7.3f, -6.15f, -5.0f, -3.85f, -2.7f, 3.05f,
+    4.2f, 5.35f, 6.5f, 7.65f, 8.8f};
 ```
 
-This leaves the central path clear:
+`Crop::initialize()` iterates `for (float x : rowCenters)`. The gap between -2.7
+and 3.05 leaves the central path clear. `Farmer::makeRoute()` calculates four
+walking aisles from the midpoints between selected adjacent rows.
 
-```cpp
-if (std::abs(x) < 2.2f)
-    continue;
-```
+When editing the array, preserve its sorted order and check the farmer's aisle
+indices, stalk clearance and terrain furrows together. Terrain still generates
+its furrows separately.
 
 This controls stalk spacing inside each row:
 
@@ -775,6 +806,93 @@ float slice = std::min(dt, 1.0f / 60);
 
 This keeps the door/cow behavior stable even during automated tests or frame
 rate hiccups.
+
+## Farmer: `src/characters/Farmer.*`
+
+`Farmer` owns one procedural human, two walking circuits, transitions between
+them, a head texture and a lantern. `Scene` constructs it, loads its texture,
+updates its pose and draws it. It starts walking automatically.
+
+### Appearance and animation
+
+The model wears a straw hat, checked shirt, denim overalls and work boots.
+`tailored()` joins elliptical rings into fitted clothing; other meshes add
+straps, buttons, a pocket, hair, ears, hands and fingers. The generic painted
+face is mapped onto a curved head surface. No personal photograph is used.
+
+Movement drives the pose through accumulated distance rather than frame count:
+
+```cpp
+constexpr float speed = 1.12f, stride = 1.32f;
+```
+
+The first value sets travel speed in world units per second; the second sets
+distance per full gait cycle. Alternating feet lift and swing, `kneeBetween()`
+solves the knee position from the hip and ankle, and the body and arms move with
+the step. Daytime inspection pauses add a head turn and reaching gesture.
+
+### Daytime tour
+
+`makeRoute(false)` creates a closed route through the central and windmill
+paths, both wheat plots, barn yard, meadow and pasture. Four aisles use
+`Crop::rowCenters` midpoints, and the pasture route crosses the actual gate
+opening near `x = 3, z = 15`.
+
+Most corners are rounded with 16 samples of a quadratic curve. Each `Sample`
+stores its point, cumulative time, cumulative distance and
+acceleration/deceleration ramps. Two stops last 4.5 seconds each, with
+0.55-second speed ramps around them. The farmer inspects wheat before resuming
+his circuit.
+
+### Night patrol and morning return
+
+The routine states are:
+
+| State      | Activity                                                         |
+| ---------- | ---------------------------------------------------------------- |
+| `Day`      | Tour the farm and inspect wheat                                  |
+| `ToBarn`   | Walk back along the current route and connect to the barn patrol |
+| `Night`    | Circle outside all four barn walls, carrying a lantern           |
+| `ToFields` | Leave the patrol and walk to the daytime circuit                 |
+
+The night circuit spans `x = -23` to `-11.8` and `z = -14` to `-1.2`. The farmer
+pauses at two patrol points to look around the cow barn. This is the farm's
+guarding animation; there is no predator or combat system.
+
+**N** changes the requested day/night state for both farmer and herd. The farmer
+retraces the shorter part of his current circuit to its entrance, then follows a
+connecting path. Switching routines does not teleport him or send him diagonally
+through fences and crops. Repeated **N** presses during a transfer retain the
+latest request and finish the current passage first. Morning returns him to the
+full daytime tour.
+
+These are predefined routes, not general collision detection or pathfinding. If
+you move structures, gates or crops, update the affected route coordinates and
+run the route-clearance checks.
+
+### Pause, camera, lighting and status
+
+- **U** toggles `walkingEnabled` and stops only the farmer.
+- **P** makes the shared animation step zero, freezing the whole simulation.
+- **J** follows the character; manual camera input releases the follow mode.
+- `Farmer::light()` positions warm `GL_LIGHT2` at the lantern before world
+  geometry is drawn. Its brightness follows `nightAmount` and the **L** toggle.
+- `statusKey()` selects the `farmer.*` message passed to
+  `HudState::farmerStatus`.
+
+### Online BMP and source credit
+
+The face uses **TheNess's**
+[Human male body and head texture](https://opengameart.org/content/human-male-body-and-head-texture-painted-with-adobe-animate)
+under **CC0 1.0 Universal**. The original 150 x 150 PNG is converted without
+resizing to `assets/textures/characters/farmer_head.bmp`, a 24-bit BMP. `head()`
+maps its face region through UV coordinates; the complete image stays in the
+asset. See [Third-party resources](THIRD_PARTY.md#farmer-head-texture) for the
+original download, license and checksum.
+
+The optional `scripts/import-farmer-texture.ps1` recreates the bundled BMP.
+Ordinary builds and runtime do not download it. Missing assets or **T** use a
+modeled face fallback. Clothing, body geometry and animation are project code.
 
 ## Barn: `src/structures/Barn.*`
 
@@ -994,6 +1112,7 @@ struct HudState {
     bool night;
     std::string viewName;
     std::string textNotice;
+    std::string farmerStatus;
 };
 ```
 
@@ -1007,7 +1126,8 @@ gluOrtho2D(0, right, 0, float(windowHeight) / scale);
 
 It draws:
 
-- top-left farm/status panel
+- top-left farm/status panel, including herd and farmer activities (150 units
+  tall)
 - bottom controls panel
 - top-right wind panel
 - right-side structural study diagram
@@ -1022,7 +1142,9 @@ That keeps text inside its panel.
 
 ## Text System: `src/core/Text.*` and `assets/text.txt`
 
-The app loads display text from `assets/text.txt`.
+The app loads display text from `assets/text.txt`. Farmer activity messages use
+`farmer.*`; the following camera uses `view.farmer`, and **J/U** help is in
+`help.views`. Save and press **F9** to update these labels.
 
 The format is:
 
@@ -1225,6 +1347,20 @@ constexpr float speed = 2.4f;
 
 Keep both values similar unless you intentionally want different behavior.
 
+### Change the Farmer's Movement or Look
+
+Edit `speed` and `stride` in `Farmer.cpp` for pace and step length. Edit the
+corner lists in `makeRoute()` for destinations and `transfer()` for the
+day/night connection. Preserve gate crossings and crop-aisle clearance.
+
+Clothing colors are the named vectors near the top of the file; hat and detail
+geometry live in `head()` and `render()`. The checked pattern is generated by
+`tailored()`, so changing the face bitmap does not change the outfit.
+
+Inspect **J**, both **N** states, **U/P**, and textures on/off after edits. Run
+the behavior suite for route or timing changes and review the farmer captures
+described in [Scripts](SCRIPTS.md).
+
 ### Move the Barn
 
 The barn is currently translated in `Barn::render()`:
@@ -1239,6 +1375,7 @@ Moving the barn visually is only part of the job. You must also update:
 - `Barn::bed()`
 - `Barn::viewPosition()`
 - herd route points in `src/systems/Herd.cpp`
+- farmer night corners and connecting paths in `src/characters/Farmer.cpp`
 - camera barn views in `src/core/Camera.cpp`
 
 For beginners, moving smaller objects like trees, rocks, signs, or the windmill
@@ -1346,6 +1483,11 @@ Check formatting only:
 .\scripts\format.ps1 -Check
 ```
 
+The farmer verification covers route clearance, repeated loops, crop stops,
+night patrol bounds, continuous day/night transfers, pause behavior and camera
+follow/release. See [Scripts](SCRIPTS.md) for capture commands and the handbook
+PDF rebuild procedure.
+
 ## Beginner Safety Checklist
 
 Before changing code:
@@ -1356,7 +1498,8 @@ Before changing code:
 1. Build after each small change.
 1. Run the app and test the related control/view.
 1. If the change affects visuals, check both overview and close camera views.
-1. If the change affects cows, test both day and night using `N`.
+1. If the change affects cows or the farmer, test day/night and both transfers
+   using `N`.
 1. If the change affects text, press `F9` before rebuilding.
 
 Good first modifications:
@@ -1422,6 +1565,20 @@ Check:
 - Barn doors must reach `Barn::passable()`.
 - Herd route points must still lead to the barn aisle.
 
+### Farmer stops or has not reached the barn
+
+Check the farmer status in the HUD. **U** stops only him; **P** pauses everyone.
+Crop inspection and patrol stops last 4.5 seconds. A day/night switch first
+walks him back along his current circuit, which can take time from the far side
+of the farm. Repeated switches finish the current transfer first.
+
+### Farmer face is untextured
+
+Enable textures with **T** and check
+`assets/textures/characters/farmer_head.bmp` beside the executable. The runtime
+expects an uncompressed 24-bit BMP; missing or invalid files use a modeled face.
+Use `--view farmer-face` for a close capture when checking its UV mapping.
+
 ### Screen looks flat or strange
 
 Check:
@@ -1453,8 +1610,11 @@ If you want to learn the full project gradually, read in this order:
 1. `src/animals/Cow.cpp`
 1. `src/systems/Herd.cpp`
 1. `src/structures/Barn.cpp`
+1. `src/vegetation/Crop.h`
+1. `src/characters/Farmer.h`
+1. `src/characters/Farmer.cpp`
 1. `src/core/Hud.cpp`
 1. `src/core/Text.cpp`
 
 That order starts with the main program flow, then small helpers, then visual
-objects, then the more complex cow/barn/HUD systems.
+objects, then the more complex cow/barn/farmer/HUD systems.

@@ -38,17 +38,42 @@ To capture the barn routine directly from an existing Release/x64 build:
 .\build\x64\Release\csc3081_farm_project.exe --capture build/verification/morning.bmp --view barn --morning --time 4
 ```
 
-`--time` advances the simulation by that many seconds. `--morning` first lets
-the herd settle for a night, then starts the requested daytime advance. The
-`--view` presets include `front`, `back`, `left`, `right`, `barn-left`, and
-`barn-right`. Add `--no-hud` to capture the scene without on-screen help. Wind
-and structural study stay in their right-hand overlays in every view, including
-small windows. The scene always fills the window behind the overlays.
-`--no-study` captures the wind panel with the study switched off.
+Capture the farmer and the online CC0 face texture:
+
+```powershell
+.\build\x64\Release\csc3081_farm_project.exe --capture build/verification/farmer.bmp --view farmer --time 4
+.\build\x64\Release\csc3081_farm_project.exe --capture build/verification/face.bmp --view farmer-face --time 4 --no-hud
+.\build\x64\Release\csc3081_farm_project.exe --capture build/verification/patrol.bmp --view farmer --night --time 80
+.\build\x64\Release\csc3081_farm_project.exe --capture build/verification/farmer-morning.bmp --view farmer --morning --time 80
+```
+
+`farmer` follows the character after the requested time advance; `farmer-face`
+frames the head for texture inspection. Verification includes the farmer in
+daylight, wheat rows, night, wireframe, small windows and without textures. The
+behavior suite checks repeated circuits, stalk clearance, inspection pauses,
+frame-rate independence, pause/resume, camera controls, all four sides of the
+night patrol and continuous day/night transfers through paths and gates.
+
+The farmer update was verified with **83 behavior checks, 36 render cases, five
+native window-close runs**, missing-assets startup and a 180-frame benchmark on
+Windows Release/x64. Frame captures still need a visual review; a successful
+render alone does not establish that a pose looks correct.
+
+`--time` advances the simulation by that many seconds. `--morning` first
+advances 60 seconds of night, then switches the herd and farmer to their morning
+routines and applies the requested daytime advance. The `--view` presets include
+`front`, `back`, `left`, `right`, `barn-left`, and `barn-right`. Add `--no-hud`
+to capture the scene without on-screen help. Wind and structural study stay in
+their right-hand overlays in every view, including small windows. The scene
+always fills the window behind the overlays. `--no-study` captures the wind
+panel with the study switched off.
 
 ## Maintenance
 
 ```powershell
+# Re-download the checksum-verified CC0 head texture and convert it to BMP.
+.\scripts\import-farmer-texture.ps1
+
 # Download/build FreeGLUT only; Visual Studio already runs this automatically.
 .\scripts\setup.ps1 -Configuration Release -Platform x64
 
@@ -70,17 +95,45 @@ verified on the first build of each build directory. Visual Studio caches it
 under `build/deps/<platform>/_deps/`; the documented CMake build uses
 `build/cmake/_deps/`. Later builds reuse those files without downloading again.
 Clearing the cache requires internet access on the next build. Keep the
-generated `FREEGLUT-LICENSE.txt` when sharing an executable.
+generated `FREEGLUT-LICENSE.txt` and the complete `assets/` folder beside the
+executable when sharing a build. Source and license notices are documented in
+[Third-party resources](THIRD_PARTY.md).
 
 The project and texture generation scripts modify project files and assets; they
 are optional when simply building or running the farm. Font generation downloads
 a pinned, checksum-verified font into `build/font/` on its first run. The
 generated atlas, metrics and license are already included.
 
+Farmer texture import uses Windows System.Drawing to convert TheNess's online
+PNG to a 24-bit BMP without changing its size or contents. Face UVs are defined
+in `src/characters/Farmer.cpp`. The BMP, source credit and CC0 license are
+already bundled, so the import script is optional. No personal photo is used.
+
 The shared labels are in `assets/text.txt`. Save edits and press **F9** while
 running; no generation script is needed. Both build paths also embed the file as
 a fallback for missing assets or omitted keys. Generated text headers stay under
 `build/`, so the editable `.txt` file is the only source to maintain.
+
+## Rebuild the handbook PDF
+
+Install a LaTeX distribution with `pdflatex` (such as MiKTeX or TeX Live). From
+the project directory, compile the handbook three times to resolve its contents,
+tables and cross-references:
+
+```powershell
+New-Item -ItemType Directory -Force build/handbook | Out-Null
+foreach ($pass in 1..3) {
+    pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build/handbook docs/handbook/willowfield_codebase_handbook.tex
+    if ($LASTEXITCODE -ne 0) { throw "Handbook build failed on pass $pass" }
+}
+Copy-Item -LiteralPath build/handbook/willowfield_codebase_handbook.pdf -Destination docs/handbook/willowfield_codebase_handbook.pdf
+```
+
+The source uses the farmer images under `screenshots/`, so keep the repository
+root as the working directory. Build intermediates stay in ignored
+`build/handbook/`. Review the compiler log for unresolved references and layout
+warnings, then inspect the resulting PDF before committing it with the source.
+LaTeX is not included in `format.ps1`.
 
 ## Formatting
 

@@ -10,6 +10,7 @@ struct HudState {
     bool night;
     std::string viewName;
     std::string textNotice;
+    std::string farmerStatus;
 };
 class Hud {
   public:

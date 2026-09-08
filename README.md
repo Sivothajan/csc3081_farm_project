@@ -26,6 +26,9 @@ Deformation. Built with C++20, OpenGL and FreeGLUT for CSC3081.
   fixed.
 - Cut meadow grass and restore it to its original height.
 - Animated cows and windmill, farm structures, lighting, textures and day/night.
+- An animated farmer in a straw hat and overalls tours the paths, wheat plots,
+  meadow and pasture, stopping to inspect crops. At night he patrols around the
+  cow barn with a lantern.
 - At night, cows line up, enter the barn through automatic doors, and sleep in
   separate straw-lined stalls with hay storage. In the morning they return to
   the field.
@@ -54,69 +57,58 @@ cmake --build build/cmake --config Release --parallel
 .\build\cmake\Release\csc3081_farm_project.exe
 ```
 
-Windows x64 and Win32 Debug have been tested. Other platforms are unverified.
-Keep `assets/` and the generated `FREEGLUT-LICENSE.txt` beside the executable
-when copying a build. Missing textures use fallback colors.
+Build and maintenance details are in [Scripts](docs/SCRIPTS.md).
 
 ## Controls
 
-| Input               | Action                           |
-| ------------------- | -------------------------------- |
-| W / A / S / D       | Move                             |
-| Arrow keys          | Look around                      |
-| Right mouse drag    | Look around                      |
-| Q / E               | Lower / raise camera             |
-| G / V               | Meadow view / overview           |
-| H                   | View the barn interior           |
-| Tab                 | Cycle through eight camera views |
-| F1                  | Overview                         |
-| F2 / F3             | Farm front / back                |
-| F4 / F5             | Farm left / right                |
-| F6 / F7 / F8        | Barn center / left / right       |
-| F9                  | Reload the shared text file      |
-| F10                 | Hide / show on-screen help       |
-| + or = / -          | Increase / decrease wind         |
-| 0 / 1 / 2 / 3       | Wind off / low / medium / strong |
-| C / R               | Toggle cutting / restore grass   |
-| P                   | Pause animation and cutting      |
-| N                   | Toggle day/night                 |
-| B                   | Toggle structural study          |
-| L / T / F           | Lighting / textures / wireframe  |
-| Esc or window close | Exit                             |
+| Input               | Action                             |
+| ------------------- | ---------------------------------- |
+| W / A / S / D       | Move                               |
+| Arrow keys          | Look around                        |
+| Right mouse drag    | Look around                        |
+| Q / E               | Lower / raise camera               |
+| G / V               | Meadow view / overview             |
+| H                   | View the barn interior             |
+| J                   | Follow / release the farmer camera |
+| U                   | Stop / resume the farmer           |
+| Tab                 | Cycle through eight camera views   |
+| F1                  | Overview                           |
+| F2 / F3             | Farm front / back                  |
+| F4 / F5             | Farm left / right                  |
+| F6 / F7 / F8        | Barn center / left / right         |
+| F9                  | Reload the shared text file        |
+| F10                 | Hide / show on-screen help         |
+| + or = / -          | Increase / decrease wind           |
+| 0 / 1 / 2 / 3       | Wind off / low / medium / strong   |
+| C / R               | Toggle cutting / restore grass     |
+| P                   | Pause animation and cutting        |
+| N                   | Toggle day/night                   |
+| B                   | Toggle structural study            |
+| L / T / F           | Lighting / textures / wireframe    |
+| Esc or window close | Exit                               |
 
 Press **G**, then **C**, and walk through the meadow to cut grass. Cutting works
 near ground level; shortened grass remains until **R** is pressed.
 
-Press **N** to start the cows' night or morning routine and **H** to watch the
-stalls. The herd status shows its progress. Repeated **N** presses keep the
-latest choice; cows already entering or leaving finish that passage before
-changing direction. **P** pauses the cows and doors along with the other
-animation.
+The farmer walks automatically. Press **J** to follow him; press it again or
+move the camera to leave follow mode. **U** stops only the farmer, while **P**
+pauses the whole farm. **N** switches between the daytime tour and night patrol
+and starts the cows' barn or morning routine. Use **H** to watch the stalls.
 
-Use **F7** and **F8** to see the cows and stall signs from either side. Every
-camera uses the same compact overlays: farm status at the top left, wind at the
-top right, controls along the bottom, and structural study above them on the
-right. The farm fills the whole window. **B** toggles the study and **F10**
-hides all overlays. Camera changes preserve both choices.
+The HUD shows the farmer and herd activities. **B** toggles the structural
+study; **F10** hides all overlays.
 
 ## Change the text
 
 Edit [assets/text.txt](assets/text.txt), save, and press **F9** to reload
 without rebuilding. It contains the title, author line, controls, camera names,
-herd messages, farm signs and individual stall names. For example, change
-`stall.1 = Stall 1` to `stall.1 = Buttercup`.
+farmer and herd messages, farm signs and individual stall names. For example,
+change `stall.1 = Stall 1` to `stall.1 = Buttercup`.
 
 Keep the keys and `{placeholders}` unchanged. Use plain ASCII text with one
-`key = value` per line. A malformed edit keeps the previous labels. When
-launched from the project folder, the app reads that folder's `assets/text.txt`;
-otherwise, it reads the copy beside the executable.
+`key = value` per line.
 
 ## Development
-
-Code is organized under `src/` by scene component. Vegetation displacement
-scales with squared height, so the base stays fixed and the tip bends more.
-Camera bounds prevent leaving the area or moving below ground; objects do not
-block movement.
 
 Run the build, behavior, rendering and window-close checks with:
 

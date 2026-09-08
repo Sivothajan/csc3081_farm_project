@@ -25,6 +25,27 @@
   to run the farm. Regenerate it with
   [generate-font.py](../scripts/generate-font.py).
 
+## Farmer head texture
+
+- **Author:** TheNess.
+- **Source:**
+  [Human male body and head texture (painted with Adobe Animate)](https://opengameart.org/content/human-male-body-and-head-texture-painted-with-adobe-animate).
+- **Original file:**
+  [head_texture.png](https://opengameart.org/sites/default/files/head_texture.png).
+- **License:**
+  [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+- **Bundled file:** `assets/textures/characters/farmer_head.bmp`.
+- **Changes:** Converted from PNG to 24-bit BMP, retaining the complete original
+  150 x 150 image. The renderer maps its face region onto a procedural head.
+- [Source and checksum](../assets/textures/characters/SOURCE.txt) and
+  [full license](../assets/textures/characters/CC0-1.0.txt) are bundled beside
+  the BMP.
+- Recreate the BMP with
+  [import-farmer-texture.ps1](../scripts/import-farmer-texture.ps1).
+
+The character geometry, farmer clothing, lantern and animation are implemented
+locally. No personal photograph, external human model or animation pack is used.
+
 ## References
 
 Conceptual references; no code or images were copied from these pages:
@@ -34,5 +55,6 @@ Conceptual references; no code or images were copied from these pages:
 - Tiago Sousa,
   [GPU Gems 3: Vegetation Procedural Animation](https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-16-vegetation-procedural-animation-and-shading-crysis).
 
-Farm geometry and the four material textures were created for this project. They
-can be regenerated with [generate-textures.py](../scripts/generate-textures.py).
+Farm geometry and the four material textures were created for this project. The
+material textures can be regenerated with
+[generate-textures.py](../scripts/generate-textures.py).

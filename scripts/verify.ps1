@@ -11,6 +11,18 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Self-test failed.' }
     $taskCases = @(
         @{ Name = 'overview'; Args = @() },
+        @{ Name = 'farmer'; Args = @('--view', 'farmer') },
+        @{ Name = 'farmer_face'; Args = @('--view', 'farmer-face', '--no-hud') },
+        @{ Name = 'farmer_crops'; Args = @('--view', 'farmer', '--time', '43') },
+        @{ Name = 'farmer_inspection'; Args = @('--view', 'farmer', '--time', '45') },
+        @{ Name = 'farmer_night'; Args = @('--view', 'farmer', '--night', '--time', '20') },
+        @{ Name = 'farmer_night_rear'; Args = @('--view', 'farmer', '--night', '--time', '80') },
+        @{ Name = 'farmer_morning'; Args = @('--view', 'farmer', '--morning', '--time', '80') },
+        @{ Name = 'farmer_meadow'; Args = @('--view', 'farmer', '--time', '205') },
+        @{ Name = 'farmer_pasture'; Args = @('--view', 'farmer', '--time', '280') },
+        @{ Name = 'farmer_untextured'; Args = @('--view', 'farmer', '--no-textures') },
+        @{ Name = 'farmer_wireframe'; Args = @('--view', 'farmer', '--wireframe') },
+        @{ Name = 'farmer_small'; Args = @('--view', 'farmer', '--width', '640', '--height', '480') },
         @{ Name = 'meadow_still'; Args = @('--view', 'meadow', '--wind', '0') },
         @{ Name = 'meadow_wind'; Args = @('--view', 'meadow', '--wind', '3') },
         @{ Name = 'cutting'; Args = @('--view', 'cutting', '--cut-demo') },
@@ -50,7 +62,7 @@ try {
     Copy-Item -LiteralPath $taskExe -Destination "$taskNoAssets\farm.exe" -Force
     Push-Location $taskNoAssets
     try {
-        & '.\farm.exe' --capture "$taskEvidence\missing_textures.bmp"
+        & '.\farm.exe' --capture "$taskEvidence\missing_textures.bmp" --view farmer
         if ($LASTEXITCODE -ne 0) { throw 'Missing-asset startup failed.' }
     }
     finally { Pop-Location }

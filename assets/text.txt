@@ -16,6 +16,15 @@ view.barn_left = Barn from left
 view.barn_right = Barn from right
 view.meadow = Meadow
 view.free = Free camera
+view.farmer = Following the farmer
+
+farmer.walking = Farmer / exploring the farm
+farmer.crops = Farmer / walking the crop rows
+farmer.inspecting = Farmer / inspecting wheat
+farmer.stopped = Farmer stopped / U to resume
+farmer.to_barn = Farmer / heading to guard the barn
+farmer.to_fields = Farmer / returning to the fields
+farmer.guarding = Farmer / guarding the cows
 
 herd.grazing = Grazing in the field
 herd.gathering = Lining up at the pasture gate
@@ -40,7 +49,7 @@ animation.paused = Paused / P to resume
 
 help.move = WASD move / Arrows look / Q-E height
 help.actions = N day/night / P pause / C cut / R regrow
-help.views = Tab views / F9 reload text / F10 hide help
+help.views = J follow / U walk / Tab views / F9 text / F10 help
 cutting.on = Cutting on
 cutting.off = Cutting off
 cutting.status = {mode} / {count} grass blades cut

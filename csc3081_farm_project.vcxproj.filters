@@ -4,6 +4,7 @@
     <Filter Include="assets" />
     <Filter Include="src" />
     <Filter Include="src\animals" />
+    <Filter Include="src\characters" />
     <Filter Include="src\core" />
     <Filter Include="src\environment" />
     <Filter Include="src\objects" />
@@ -21,6 +22,12 @@
     </ClCompile>
     <ClInclude Include="src\animals\Cow.h">
       <Filter>src\animals</Filter>
+    </ClInclude>
+    <ClCompile Include="src\characters\Farmer.cpp">
+      <Filter>src\characters</Filter>
+    </ClCompile>
+    <ClInclude Include="src\characters\Farmer.h">
+      <Filter>src\characters</Filter>
     </ClInclude>
     <ClCompile Include="src\core\Camera.cpp">
       <Filter>src\core</Filter>

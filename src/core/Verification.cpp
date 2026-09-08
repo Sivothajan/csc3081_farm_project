@@ -55,7 +55,7 @@ RunOptions RunOptions::parse(int argc, char** argv) {
     if (o.view != "overview" && o.view != "meadow" && o.view != "crops" && o.view != "cows" &&
         o.view != "cutting" && o.view != "barn" && o.view != "barn-yard" && o.view != "front" &&
         o.view != "back" && o.view != "left" && o.view != "right" && o.view != "barn-left" &&
-        o.view != "barn-right")
+        o.view != "barn-right" && o.view != "farmer" && o.view != "farmer-face")
         throw std::runtime_error("Unknown view preset.");
     if (o.night && o.morning)
         throw std::runtime_error("Choose either --night or --morning.");
@@ -72,6 +72,15 @@ void Verification::prepare(Scene& scene, const RunOptions& o) {
         scene.key('n');
     }
     scene.update(o.time);
+    if (o.view == "farmer" || o.view == "farmer-face")
+        scene.key('j');
+    if (o.view == "farmer-face") {
+        scene.camera.stopFollowing();
+        Vec3 forward = scene.farmer.forward();
+        scene.camera.position = scene.farmer.position() + forward * 1.25f + Vec3{0, 2.29f, 0};
+        scene.camera.yaw = std::atan2(-forward.z, -forward.x) * 180 / Constants::PI;
+        scene.camera.pitch = 0;
+    }
     if (o.view == "barn")
         scene.key('h');
     const char* views[]{"overview", "front", "back",      "left",
@@ -359,6 +368,146 @@ bool Verification::run(Scene& scene) {
         sameTravel &=
             length(slowFrames.animals()[i].position() - fastFrames.animals()[i].position()) < .02f;
     check(sameTravel, "Herd travel agrees at 20 and 60 updates per second");
+    Farmer walker;
+    Vec3 walkerStart = walker.position();
+    walker.update(2);
+    check(length(walker.position() - walkerStart) > 2,
+          "Farmer starts walking automatically without user input");
+    bool safeWalk = true, clearStalks = true, smoothHeading = true, smoothGait = true;
+    bool eastRows = false, westRows = false, inspected = false, usedPath = false;
+    bool meadowVisited = false, pastureVisited = false, barnVisited = false;
+    for (int tick = 0; tick < 24000; ++tick) {
+        Vec3 old = walker.position();
+        float oldHeading = walker.heading, oldGait = walker.gait;
+        walker.update(1.0f / 30);
+        Vec3 p = walker.position();
+        safeWalk &= std::isfinite(p.x) && std::isfinite(p.z) && std::abs(p.x) < 23 &&
+                    std::abs(p.z) < 23 && length(p - old) < .038f && p.y == 0;
+        smoothHeading &= std::abs(std::remainder(walker.heading - oldHeading, 360.0f)) < 24;
+        smoothGait &= std::abs(std::remainder(walker.gait - oldGait, 2 * Constants::PI)) < .19f;
+        // Include the randomized stalk-root width and the farmer's body clearance.
+        if (p.z > -20.4f && p.z < -4.2f) {
+            for (float x : Crop::rowCenters)
+                clearStalks &= std::abs(p.x - x) > .40f;
+            eastRows |= p.x > 3 && p.x < 9;
+            westRows |= p.x < -2.5f && p.x > -8;
+        }
+        inspected |= walker.inspection > .9f && length(p - old) == 0;
+        usedPath |= std::abs(p.z) < 1 && p.x > 10;
+        meadowVisited |= p.x < -8 && p.z > 10;
+        pastureVisited |= p.x > 14 && p.z > 6;
+        barnVisited |= p.x < -17 && std::abs(p.z) < 1;
+    }
+    check(safeWalk && smoothHeading && smoothGait,
+          "Multiple farmer circuits preserve speed, smooth turns and continuous gait at the loop "
+          "seam");
+    check(clearStalks && eastRows && westRows && usedPath,
+          "Farmer visits both wheat plots and paths with clearance from every stalk row");
+    check(inspected, "Farmer stops moving to inspect wheat during each circuit");
+    check(meadowVisited && pastureVisited && barnVisited,
+          "Daytime farmer tour also visits the meadow, pasture and barn yard");
+    bool clearWalls = true, validGate = true, noTeleport = true;
+    auto advanceFarmer = [&](Farmer& person, bool night, float seconds) {
+        for (int tick = 0; tick < int(std::round(seconds * 30)); ++tick) {
+            Vec3 old = person.position();
+            person.update(1.0f / 30, night);
+            Vec3 p = person.position();
+            noTeleport &= std::isfinite(p.x) && std::isfinite(p.z) && length(p - old) < .038f;
+            clearWalls &= !(p.x > -20.95f && p.x < -13.05f && p.z > -12.85f && p.z < -3.75f);
+            if ((p.x - 3) * (old.x - 3) < 0 && p.z > 3)
+                validGate &= p.z > 13.5f && p.z < 16.5f;
+        }
+    };
+    Farmer guard;
+    guard.update(120); // Start the night change inside the crop tour, away from the barn.
+    advanceFarmer(guard, true, 300);
+    check(guard.routine == Farmer::Routine::Night && guard.nightRequested,
+          "Night sends the farmer along a safe connecting route to the barn patrol");
+    bool frontPatrol = false, backPatrol = false, leftPatrol = false, rightPatrol = false;
+    for (int tick = 0; tick < 3000; ++tick) {
+        guard.update(1.0f / 30, true);
+        Vec3 p = guard.position();
+        frontPatrol |= p.z > -2;
+        backPatrol |= p.z < -13;
+        leftPatrol |= p.x < -22;
+        rightPatrol |= p.x > -12.2f;
+        clearWalls &= !(p.x > -20.95f && p.x < -13.05f && p.z > -12.85f && p.z < -3.75f);
+    }
+    check(frontPatrol && backPatrol && leftPatrol && rightPatrol,
+          "Night watch repeatedly covers all four outside walls of the cow barn");
+    advanceFarmer(guard, false, 350);
+    check(guard.routine == Farmer::Routine::Day && !guard.nightRequested,
+          "Morning returns the farmer to the full daytime tour");
+    for (int toggle = 0; toggle < 40; ++toggle)
+        advanceFarmer(guard, toggle % 2 == 0, .5f);
+    advanceFarmer(guard, true, 400);
+    bool settledNight = guard.routine == Farmer::Routine::Night;
+    for (int toggle = 0; toggle < 40; ++toggle)
+        advanceFarmer(guard, toggle % 2 == 0, .5f);
+    advanceFarmer(guard, false, 400);
+    check(settledNight && guard.routine == Farmer::Routine::Day,
+          "Rapid day/night changes finish safe passages then honour the latest routine");
+    check(clearWalls && validGate && noTeleport,
+          "Routine changes preserve barn-wall clearance, use the pasture gate and never teleport");
+    Farmer nightLarge, nightSmall;
+    nightLarge.update(150);
+    nightSmall.update(150);
+    nightLarge.update(400, true);
+    advanceFarmer(nightSmall, true, 400);
+    check(nightLarge.routine == nightSmall.routine &&
+              length(nightLarge.position() - nightSmall.position()) < .002f,
+          "Night transfer and patrol agree for one large update and live frame updates");
+    Farmer slowWalker, fastWalker, largeWalker;
+    for (int i = 0; i < 8000; ++i)
+        slowWalker.update(1.0f / 20);
+    for (int i = 0; i < 24000; ++i)
+        fastWalker.update(1.0f / 60);
+    largeWalker.update(400);
+    check(length(slowWalker.position() - fastWalker.position()) < .001f &&
+              length(largeWalker.position() - fastWalker.position()) < .001f &&
+              std::abs(slowWalker.inspection - fastWalker.inspection) < .001f,
+          "Farmer route agrees at 20 FPS, 60 FPS and a single large time advance");
+    walker.toggleWalking();
+    Vec3 stoppedPosition = walker.position();
+    float stoppedGait = walker.gait, stoppedInspection = walker.inspection;
+    walker.update(15);
+    check(length(walker.position() - stoppedPosition) == 0 && walker.gait == stoppedGait &&
+              walker.inspection == stoppedInspection,
+          "Stopping the farmer freezes travel, limbs and inspection without resetting the route");
+    walker.toggleWalking();
+    walker.update(8);
+    check(length(walker.position() - stoppedPosition) > 1, "Farmer resumes the existing route");
+    scene.key('j');
+    scene.update(1);
+    check(scene.camera.followingFarmer() &&
+              length(scene.camera.position - scene.farmer.position()) < 6 &&
+              scene.camera.viewName() == Text::get("view.farmer"),
+          "J enables a close camera that tracks the moving farmer");
+    scene.key('j');
+    check(!scene.camera.followingFarmer(), "J also releases the follow camera");
+    scene.key('j');
+    keys = {};
+    keys['w'] = true;
+    scene.camera.update(.1f, keys, {});
+    check(!scene.camera.followingFarmer(), "Manual camera movement releases farmer follow mode");
+    scene.key('j');
+    scene.specialKey(GLUT_KEY_F1);
+    check(!scene.camera.followingFarmer(), "Camera presets release farmer follow mode");
+    scene.key('u');
+    double frozenClock = scene.farmer.clock;
+    scene.update(1);
+    check(scene.farmer.clock == frozenClock && !scene.farmer.walkingEnabled,
+          "U stops only the farmer while the rest of the farm continues");
+    scene.key('u');
+    scene.key('p');
+    scene.update(2);
+    check(scene.farmer.clock == frozenClock && scene.farmer.walkingEnabled,
+          "Global P pause freezes the farmer and preserves its individual walking choice");
+    scene.key('p');
+    scene.update(1);
+    check(scene.farmer.clock != frozenClock, "Global resume continues automatic farmer travel");
+    check(scene.farmer.portrait != 0,
+          "The bundled online CC0 BMP loads as the farmer face texture");
     scene.key('0');
     check(scene.wind.getStrength() == 0, "Zero key disables wind");
     scene.key('3');

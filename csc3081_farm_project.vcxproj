@@ -162,6 +162,8 @@ copy /Y "$(ProjectDir)build\deps\$(Platform)\_deps\freeglut-src\COPYING" "$(OutD
     <None Include="assets\text.txt" />
     <ClCompile Include="src\animals\Cow.cpp" />
     <ClInclude Include="src\animals\Cow.h" />
+    <ClCompile Include="src\characters\Farmer.cpp" />
+    <ClInclude Include="src\characters\Farmer.h" />
     <ClCompile Include="src\core\Camera.cpp" />
     <ClInclude Include="src\core\Camera.h" />
     <ClCompile Include="src\core\Capture.cpp" />

@@ -1,0 +1,14 @@
+Asset: farmer_head.bmp
+Title: Human male body and head texture (painted with Adobe Animate)
+Author: TheNess
+Source: https://opengameart.org/content/human-male-body-and-head-texture-painted-with-adobe-animate
+Original file: https://opengameart.org/sites/default/files/head_texture.png
+License: Creative Commons CC0 1.0 Universal
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+License text: CC0-1.0.txt in this directory
+Retrieved: 2026-09-08
+Original SHA-256: ad3b2c7eecf959d6675e3f1ebf3474a00d40d91619ea4d9a3dccb1b68b8927d7
+Changes: PNG converted to 24-bit BMP; original size and image retained.
+Use: The front facial region is mapped onto the procedural farmer head.
+Rebuild: Run scripts/import-farmer-texture.ps1 on Windows.
+The original author is credited voluntarily; CC0 does not require attribution.

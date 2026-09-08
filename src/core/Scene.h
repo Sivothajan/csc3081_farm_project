@@ -17,6 +17,7 @@
 #include "Hud.h"
 #include "Texture.h"
 #include "../environment/Sky.h"
+#include "../characters/Farmer.h"
 class Scene {
     friend class Verification;
 
@@ -43,6 +44,7 @@ class Scene {
     Crop crops;
     Tree trees;
     Herd herd;
+    Farmer farmer;
     AnimationSystem animation;
     GrassCuttingSystem cutting;
     Hud hud;

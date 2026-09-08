@@ -5,9 +5,7 @@ void Crop::initialize() {
     stalks.clear();
     std::mt19937 rng(571);
     std::uniform_real_distribution<float> random(0, 1);
-    for (float x = -7.3f; x < 9; x += 1.15f) {
-        if (std::abs(x) < 2.2f)
-            continue; // Leave the north-south footpath clear.
+    for (float x : rowCenters) {
         for (float z = -20.2f; z < -4.4f; z += .42f)
             stalks.push_back({{x + (random(rng) - .5f) * .22f, .05f, z},
                               1.3f + random(rng) * .5f,

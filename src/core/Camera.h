@@ -14,10 +14,14 @@ class Camera {
     void fieldView();
     void setView(View view);
     void cycleView();
+    void followFarmer(Vec3 target, Vec3 forward);
+    bool followingFarmer() const { return followActive; }
+    void stopFollowing();
     const std::string& viewName() const;
 
   private:
     View selected = View::Overview;
     const char* customName = nullptr;
+    bool followActive = false;
     void aimAt(Vec3 target);
 };

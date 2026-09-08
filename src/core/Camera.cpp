@@ -13,6 +13,7 @@ void Camera::update(float dt, const std::array<bool, 256>& keys,
                 right * (float(keys['d']) - float(keys['a']));
     move.y = float(keys['e']) - float(keys['q']);
     if (length(move) > 0) {
+        stopFollowing();
         customName = "view.free";
         position = position + normalized(move) * (Constants::CAMERA_SPEED * dt);
     }
@@ -21,8 +22,10 @@ void Camera::update(float dt, const std::array<bool, 256>& keys,
     position.y = std::clamp(position.y, Constants::EYE_MIN, 30.0f);
 }
 void Camera::look(float dx, float dy) {
-    if (dx != 0 || dy != 0)
+    if (dx != 0 || dy != 0) {
+        followActive = false;
         customName = "view.free";
+    }
     yaw = std::remainder(yaw + dx, 360.0f);
     pitch = std::clamp(pitch + dy, -80.0f, 80.0f);
 }
@@ -36,6 +39,7 @@ void Camera::overview() {
     setView(View::Overview);
 }
 void Camera::fieldView() {
+    followActive = false;
     selected = View::Overview;
     customName = "view.meadow";
     position = {-10, 1.65f, 17};
@@ -51,6 +55,7 @@ void Camera::setView(View view) {
     if (view < View::Overview || view >= View::Count)
         return;
     selected = view;
+    followActive = false;
     customName = nullptr;
     Vec3 target{0, 0, 0};
     switch (view) {
@@ -93,6 +98,17 @@ void Camera::setView(View view) {
 }
 void Camera::cycleView() {
     setView(static_cast<View>((static_cast<int>(selected) + 1) % static_cast<int>(View::Count)));
+}
+void Camera::followFarmer(Vec3 target, Vec3 forward) {
+    followActive = true;
+    customName = "view.farmer";
+    Vec3 right{forward.z, 0, -forward.x};
+    position = target + forward * 4.2f + right * 2.2f + Vec3{0, 2.65f, 0};
+    aimAt(target + Vec3{0, 1.4f, 0});
+}
+void Camera::stopFollowing() {
+    followActive = false;
+    customName = "view.free";
 }
 const std::string& Camera::viewName() const {
     if (customName)
